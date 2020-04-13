@@ -198,7 +198,7 @@ class _CameraWidgetState extends State<CameraWidget> {
 
     try {
       await controller.initialize();
-    } on CameraException catch (e) {
+    } on CameraException {
     }
 
     if (mounted) setState(() {});
@@ -239,7 +239,7 @@ class _CameraWidgetState extends State<CameraWidget> {
 
     try {
       await controller.takePicture(filePath);
-    } on CameraException catch (e) {
+    } on CameraException {
       return null;
     }
     return filePath;

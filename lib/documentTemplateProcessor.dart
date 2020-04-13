@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:covid19_4ro/Model/address.dart';
 import 'package:covid19_4ro/Model/statementOnYourLiability.dart';
+import 'package:covid19_4ro/houghTransform.dart';
 import 'package:flutter/material.dart';
 
 import 'package:image/image.dart' as img;
@@ -91,6 +92,12 @@ class DocumentTemplateProcessor {
   img.Image decorateImageWithText() {
     if (_image != null) {
       var image = _image.clone();
+
+      image = img.sobel(image);
+
+      HoughTransform ht = HoughTransform(image);
+      var matrix = ht.calculateHoughMatrix();
+      image = ht.createImageFromHoughMatrix(matrix);
 
       img.drawCircle(image, x, y, 10, 0xFFFFFFFF);
 
