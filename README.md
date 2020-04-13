@@ -14,3 +14,15 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter, view our
 [online documentation](https://flutter.dev/docs), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
+
+
+
+
+## Steps to generate and load a new font:
+- Go to http://kkvazars.com/littera
+- Configure it for the font and characters you would like
+- Use the "XML (.fnt)" export format
+- Press Export and download the generated zip file.
+- Copy the zip file into /assets/fonts directory
+- Use the fontLoader.dart to create font.dart like this: CreateFontDart.create('font', 14);
+- Use the font.

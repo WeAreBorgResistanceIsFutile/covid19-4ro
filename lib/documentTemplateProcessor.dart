@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 import 'package:image/image.dart' as img;
 
+import 'Fonts/arial14.dart';
 import 'Model/documentElement.dart';
 import 'Model/documentText.dart';
 import 'Model/pageDescription.dart';
@@ -103,7 +104,7 @@ class DocumentTemplateProcessor {
   }
 
   void _drawTextOnImage(img.Image image, DocumentText c) {
-    img.drawString(image, img.arial_14, c.x.toInt(), c.y.toInt(), c.text, color: c.color);
+    img.drawString(image, arial_14, c.x.toInt(), c.y.toInt(), c.text, color: c.color);
   }
 
   void saveData() {
