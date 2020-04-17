@@ -35,30 +35,32 @@ class PageDescription {
   final Location pageBottomRightLocation;
   final Size canvasSize;
 
+  get pageWidth => pageTopRightLocation.x - pageTopLeftLocation.x;
+  get pageHeight => pageBottomLeftLocation.y - pageTopLeftLocation.y;
+
   PageDescription(this.pageTopLeftLocation, this.pageTopRightLocation, this.pageBottomLeftLocation, this.pageBottomRightLocation, this.canvasSize);
 
   Map<String, DocumentText> _getDocumentElementsWithOnPaperCoordinates(BuildContext context) {
     return {
-      firstName: DocumentText(58, 54, getLocalizedValue(context, 'firstName')),
-      lastName: DocumentText(120, 54, getLocalizedValue(context, 'lastName')),
+      firstName: DocumentText(58, 54, _getLocalizedValue(context, 'firstName')),
+      lastName: DocumentText(120, 54, _getLocalizedValue(context, 'lastName')),
       dayOfBirth: DocumentText(58, 63, '28'),
       monthOfBirth: DocumentText(72, 63, '05'),
       yearOfBirth: DocumentText(86, 63, '1968'),
-      addressLine1: DocumentText(58, 71, getLocalizedValue(context, 'addressLine1')),
-      addressLine2: DocumentText(58, 79, getLocalizedValue(context, 'addressLine2')),
-      destination: DocumentText(24, 106, getLocalizedValue(context, 'destination')),
+      addressLine1: DocumentText(58, 71, _getLocalizedValue(context, 'addressLine1')),
+      addressLine2: DocumentText(58, 79, _getLocalizedValue(context, 'addressLine2')),
+      destination: DocumentText(24, 106, _getLocalizedValue(context, 'destination')),
       reasonOption1: DocumentText(32, 132, 'X'),
       reasonOption2: DocumentText(32, 142, 'X'),
       reasonOption3: DocumentText(32, 152, 'X'),
       reasonOption4: DocumentText(32, 161, 'X'),
       reasonOption5: DocumentText(32, 171, 'X'),
       reasonOption6: DocumentText(32, 181, 'X'),
-      agriculturalActivityDescription: DocumentText(38, 182, getLocalizedValue(context, 'agriculturalActivityDescription')),
+      agriculturalActivityDescription: DocumentText(38, 182, _getLocalizedValue(context, 'agriculturalActivityDescription')),
       reasonOption7: DocumentText(32, 191, 'X'),
       reasonOption8: DocumentText(32, 195, 'X'),
       reasonOption9: DocumentText(32, 202, 'X'),
-      reasonOption10: DocumentText(32, 207, 'X'),
-      date: DocumentText(60, 230, '30.05.2020')
+      reasonOption10: DocumentText(32, 207, 'X')
     };
   }
 
@@ -80,5 +82,5 @@ class PageDescription {
     return txt;
   }
 
-  String getLocalizedValue(BuildContext context, String key) => AppLocalizations.of(context).translate(key);
+  String _getLocalizedValue(BuildContext context, String key) => AppLocalizations.of(context).translate(key);
 }

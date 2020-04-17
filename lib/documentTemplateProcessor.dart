@@ -1,8 +1,8 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:covid19_4ro/Model/address.dart';
 import 'package:covid19_4ro/Model/statementOnYourLiability.dart';
-import 'package:covid19_4ro/houghTransform.dart';
 import 'package:flutter/material.dart';
 
 import 'package:image/image.dart' as img;
@@ -14,6 +14,7 @@ import 'Model/pageDescription.dart';
 import 'Model/person.dart';
 import 'Repository/documentTextsRepository.dart';
 import 'Repository/templateImageRepository.dart';
+import 'houghTransform.dart';
 import 'tanslateCoordinates.dart';
 
 class DocumentTemplateProcessor {
@@ -26,18 +27,57 @@ class DocumentTemplateProcessor {
   int _x, _y;
 
   get x => _x ?? 0;
+
   get y => _y ?? 0;
+
   get isImageLoaded => _image != null;
 
   void loadImageFromCamera(BuildContext context, String imagePath, PageDescription pageDescription) {
     final image = img.decodeImage(File(imagePath).readAsBytesSync());
-    final resizedImage = img.copyResize(image, width: 1024);
+    var resizedImage = img.copyResize(image, width: 1024);
+
+    _image = resizedImage;
+
+    _image = img.sobel(_image);
+    for (var x = 0; x < _image.width; x++) {
+      for (var y = 0; y < _image.height; y++) {
+        if (img.getLuminance(_image.getPixel(x, y)) > 200) {
+          _image.setPixelRgba(x, y, 255, 255, 255);
+        } else
+          _image.setPixelRgba(x, y, 0, 0, 0);
+      }
+    }
 
     initializeData(resizedImage);
-
     _pageDescription = (new TanslateCoordinates(pageDescription)).getPageDescription(resizedImage.width.toDouble(), resizedImage.height.toDouble());
-
     documentElements = _pageDescription.getDocumentElements(context);
+
+    var cropImageX = _pageDescription.pageTopLeftLocation.x.toInt();
+    var cropImageY = _pageDescription.pageTopLeftLocation.y.toInt();
+
+    var imageShrinkedToPaperArea = img.copyCrop(_image, cropImageX, cropImageY, _pageDescription.pageWidth.toInt(), _pageDescription.pageHeight.toInt());
+    imageShrinkedToPaperArea = img.grayscale(imageShrinkedToPaperArea);
+
+    HoughTransform ht = HoughTransform(imageShrinkedToPaperArea, thetaSubunitsPerDegree: 1, rhoSubunits: 1, luminanceThreashold: 200);
+
+    var lines = ht.getLines();
+    lines.forEach((e) {
+      for (int x = 0; x < imageShrinkedToPaperArea.width; x++) {
+        var y = (-cos(e.theta) / sin(e.theta)) * x + (e.rho / sin(e.theta));
+
+        if (y > 0 && y.toInt() <= imageShrinkedToPaperArea.height) {
+          _image.setPixel(cropImageX + x, cropImageY + y.toInt(), 0xFF00FF00);
+        }
+      }
+
+      for (int y = 0; y < imageShrinkedToPaperArea.height; y++) {
+        var x = (-sin(e.theta) / cos(e.theta)) * y + (e.rho / cos(e.theta));
+
+        if (x > 0 && x.toInt() <= imageShrinkedToPaperArea.width) {
+          _image.setPixel(cropImageX + x.toInt(), cropImageY + y, 0xFFFFFF00);
+        }
+      }
+    });
   }
 
   void initializeData(img.Image image) {
@@ -92,13 +132,6 @@ class DocumentTemplateProcessor {
   img.Image decorateImageWithText() {
     if (_image != null) {
       var image = _image.clone();
-
-      image = img.sobel(image);
-
-      HoughTransform ht = HoughTransform(image);
-      var matrix = ht.calculateHoughMatrix();
-      image = ht.createImageFromHoughMatrix(matrix);
-
       img.drawCircle(image, x, y, 10, 0xFFFFFFFF);
 
       documentElements.forEach((key, value) {
