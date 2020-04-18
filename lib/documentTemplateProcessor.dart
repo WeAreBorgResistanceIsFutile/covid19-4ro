@@ -15,6 +15,7 @@ import 'Model/pageDescription.dart';
 import 'Model/person.dart';
 import 'Repository/documentTextsRepository.dart';
 import 'Repository/templateImageRepository.dart';
+import 'drawString.dart';
 import 'houghTransform.dart';
 import 'tanslateCoordinates.dart';
 
@@ -60,16 +61,18 @@ class DocumentTemplateProcessor {
       final Location pageBottomLeftLocation = Location(vline1[1].x, hline2[0].y);
       final Location pageBottomRightLocation = Location(vline2[1].x, hline2[1].y);
 
-      img.drawCircle(_image, pageTopLeftLocation.x.toInt(), pageTopLeftLocation.y.toInt(), 10, img.getColor(250, 0, 0));
-      img.drawCircle(_image, pageTopRightLocation.x.toInt(), pageTopRightLocation.y.toInt(), 10, img.getColor(250, 255, 0));
-      img.drawCircle(_image, pageBottomLeftLocation.x.toInt(), pageBottomLeftLocation.y.toInt(), 10, img.getColor(250, 255, 255));
-      img.drawCircle(_image, pageBottomRightLocation.x.toInt(), pageBottomRightLocation.y.toInt(), 10, img.getColor(0, 0, 0));
+      // img.drawCircle(_image, pageTopLeftLocation.x.toInt(), pageTopLeftLocation.y.toInt(), 10, img.getColor(250, 0, 0));
+      // img.drawCircle(_image, pageTopRightLocation.x.toInt(), pageTopRightLocation.y.toInt(), 10, img.getColor(250, 255, 0));
+      // img.drawCircle(_image, pageBottomLeftLocation.x.toInt(), pageBottomLeftLocation.y.toInt(), 10, img.getColor(250, 255, 255));
+      // img.drawCircle(_image, pageBottomRightLocation.x.toInt(), pageBottomRightLocation.y.toInt(), 10, img.getColor(0, 0, 0));
+
+      pageDescription = PageDescription(pageTopLeftLocation, pageTopRightLocation, pageBottomLeftLocation, pageBottomRightLocation, Size(resizedImage.width.toDouble(), resizedImage.height.toDouble()));
+      _pageDescription = (new TanslateCoordinates(pageDescription)).getPageDescription(resizedImage.width.toDouble(), resizedImage.height.toDouble());
     }
 
     // lines.forEach((e) {
     //   drawLinesWithOffsett(_image, e, cropImageX, cropImageY);
     // });
-    
 
     // img.drawLine(_image, cropImageX, cropImageY, cropImageX + imageShrinkedToPaperArea.width, cropImageY, img.getColor(0, 255, 0));
     // img.drawLine(_image, cropImageX, cropImageY + imageShrinkedToPaperArea.height, cropImageX + imageShrinkedToPaperArea.width, cropImageY + imageShrinkedToPaperArea.height, img.getColor(0, 255, 0));
@@ -128,13 +131,13 @@ class DocumentTemplateProcessor {
     }
   }
 
-  img.Image decorateImageWithText() {
+  img.Image decorateImageWithOrientatedText(double theta) {
     if (_image != null) {
       var image = _image.clone();
       img.drawCircle(image, x, y, 10, 0xFFFFFFFF);
 
       documentElements.forEach((key, value) {
-        _drawTextOnImage(image, value);
+        _drawTextOnImage(image, value, theta);
       });
 
       return image;
@@ -142,8 +145,22 @@ class DocumentTemplateProcessor {
     return null;
   }
 
-  void _drawTextOnImage(img.Image image, DocumentText c) {
-    img.drawString(image, arial_14, c.x.toInt(), c.y.toInt(), c.text, color: c.color);
+  img.Image decorateImageWithText() {
+    if (_image != null) {
+      var image = _image.clone();
+      img.drawCircle(image, x, y, 10, 0xFFFFFFFF);
+
+      documentElements.forEach((key, value) {
+        _drawTextOnImage(image, value, 0);
+      });
+
+      return image;
+    }
+    return null;
+  }
+
+  void _drawTextOnImage(img.Image image, DocumentText c, double theta) {
+    drawString(image, arial_14, c.x.toInt(), c.y.toInt(), c.text, theta, color: c.color);
   }
 
   void saveData() {
@@ -152,53 +169,8 @@ class DocumentTemplateProcessor {
   }
 
   Future<bool> loadData() async {
-    //_image = await _loadSavedImage();
-
-    _image = img.Image(1024, 1820);
-
-    img.fill(_image, img.getColor(0, 0, 0));
-
-    // img.drawLine(_image, 100, 150, 500, 500, img.getColor(255, 255, 255));
-    // img.drawLine(_image, 500, 100, 500, 500, img.getColor(255, 255, 255));
-    // img.drawLine(_image, 100, 100, 500, 100, img.getColor(255, 255, 255));
-    // img.drawLine(_image, 1000, 100, 500, 500, img.getColor(255, 255, 255));
-    // img.drawLine(_image, 1000, 100, 500, 200, img.getColor(255, 255, 255));
-    // img.drawLine(_image, 1000, 000, 500, 400, img.getColor(255, 255, 255));
-
-    // img.drawLine(_image, 1000, 200, 500, 500, img.getColor(255, 255, 255));
-    // img.drawLine(_image, 1000, 300, 500, 600, img.getColor(255, 255, 255));
-    // img.drawLine(_image, 1000, 400, 500, 700, img.getColor(255, 255, 255));
-
-    // img.drawLine(_image, 1000, 500, 500, 200, img.getColor(255, 255, 255));
-    // img.drawLine(_image, 1000, 600, 500, 300, img.getColor(255, 255, 255));
-    // img.drawLine(_image, 1000, 700, 500, 400, img.getColor(255, 255, 255));
-
-    img.drawLine(_image, 120, 100, 100, 500, img.getColor(255, 255, 255));
-
-    img.drawLine(_image, 90, 100, 100, 500, img.getColor(255, 255, 255));
-
-    img.drawLine(_image, 100, 100, 100, 800, img.getColor(255, 255, 255));
-    img.drawLine(_image, 100, 100, 600, 100, img.getColor(255, 255, 255));
-    img.drawLine(_image, 600, 100, 600, 800, img.getColor(255, 255, 255));
-    img.drawLine(_image, 100, 800, 600, 800, img.getColor(255, 255, 255));
-
-    img.drawLine(_image, 100 + 300, 100 + 300, 100 + 300, 800 + 300, img.getColor(255, 255, 255));
-    img.drawLine(_image, 100 + 300, 100 + 300, 600 + 300, 100 + 300, img.getColor(255, 255, 255));
-    img.drawLine(_image, 600 + 300, 100 + 300, 600 + 300, 800 + 300, img.getColor(255, 255, 255));
-    img.drawLine(_image, 100 + 300, 800 + 300, 600 + 300, 800 + 300, img.getColor(255, 255, 255));
-
-    // _image.setPixel(500, 500, img.getColor(255,255,255));
-
-    _image = img.sobel(_image);
-
+    _image = await _loadSavedImage();
     initializeData(_image);
-
-    HoughTransform ht = HoughTransform(_image, thetaSubunitsPerDegree: 10, rhoSubunits: 1, luminanceThreashold: 200);
-
-    var lines = ht.getLines();
-    lines.forEach((e) {
-      drawLines(e);
-    });
 
     if (_image != null) {
       initializeData(_image);
