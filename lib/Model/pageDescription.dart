@@ -34,11 +34,12 @@ class PageDescription {
   final Location pageBottomLeftLocation;
   final Location pageBottomRightLocation;
   final Size canvasSize;
+  final double rotationAngle;
 
   get pageWidth => pageTopRightLocation.x - pageTopLeftLocation.x;
   get pageHeight => pageBottomLeftLocation.y - pageTopLeftLocation.y;
 
-  PageDescription(this.pageTopLeftLocation, this.pageTopRightLocation, this.pageBottomLeftLocation, this.pageBottomRightLocation, this.canvasSize);
+  PageDescription(this.pageTopLeftLocation, this.pageTopRightLocation, this.pageBottomLeftLocation, this.pageBottomRightLocation, this.canvasSize, {this.rotationAngle = 0});
 
   Map<String, DocumentText> _getDocumentElementsWithOnPaperCoordinates(BuildContext context) {
     return {

@@ -38,8 +38,10 @@ class HoughTransform {
 
     horizontalLines.sort((a, b) => a.rho.compareTo(b.rho));
     verticalLines.sort((a, b) => a.rho.compareTo(b.rho));
-
-    return [horizontalLines.first, horizontalLines.last, verticalLines.first, verticalLines.last];
+    if (horizontalLines.length == 2 && verticalLines.length == 2)
+      return [horizontalLines.first, horizontalLines.last, verticalLines.first, verticalLines.last];
+    else
+      return List<ThetaRho>();
   }
 
   Image getHoughSpaceImage() {
@@ -92,13 +94,13 @@ class HoughTransform {
         max = max > matrix[x][y] ? max : matrix[x][y];
       }
     }
-
-    for (var x = 0; x < matrix.length; x++) {
-      for (var y = 0; y < matrix[0].length; y++) {
-        retVar[x][y] = (255 * matrix[x][y]) ~/ max;
+    if (max > 0) {
+      for (var x = 0; x < matrix.length; x++) {
+        for (var y = 0; y < matrix[0].length; y++) {
+          retVar[x][y] = (255 * matrix[x][y]) ~/ max;
+        }
       }
     }
-
     return retVar;
   }
 
