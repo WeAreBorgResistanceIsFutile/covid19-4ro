@@ -10,6 +10,7 @@ import 'package:image/image.dart' as img;
 import 'Fonts/arial14.dart';
 import 'Model/documentElement.dart';
 import 'Model/documentText.dart';
+import 'Model/location.dart';
 import 'Model/pageDescription.dart';
 import 'Model/person.dart';
 import 'Repository/documentTextsRepository.dart';
@@ -37,47 +38,45 @@ class DocumentTemplateProcessor {
     var resizedImage = img.copyResize(image, width: 1024);
 
     _image = resizedImage;
+    pageDescription = (new TanslateCoordinates(pageDescription)).getPageDescription(resizedImage.width.toDouble(), resizedImage.height.toDouble());
 
-    _image = img.sobel(_image);
-    for (var x = 0; x < _image.width; x++) {
-      for (var y = 0; y < _image.height; y++) {
-        if (img.getLuminance(_image.getPixel(x, y)) > 200) {
-          _image.setPixelRgba(x, y, 255, 255, 255);
-        } else
-          _image.setPixelRgba(x, y, 0, 0, 0);
-      }
+    var cropImageX = pageDescription.pageTopLeftLocation.x.toInt();
+    var cropImageY = pageDescription.pageTopLeftLocation.y.toInt();
+
+    var imageShrinkedToPaperArea = img.copyCrop(_image, cropImageX, cropImageY, pageDescription.pageWidth.toInt(), pageDescription.pageHeight.toInt());
+
+    HoughTransform ht = HoughTransform(imageShrinkedToPaperArea, thetaSubunitsPerDegree: 20, rhoSubunits: 1, luminanceThreashold: 200);
+
+    var lines = ht.getLines();
+    var locations = lines.map((e) => getLineCoordinates(e, cropImageX, cropImageY, [0, 0, _image.width, _image.height])).toList();
+    if (locations.length == 4) {
+      final vline1 = locations[0];
+      final vline2 = locations[1];
+      final hline1 = locations[2];
+      final hline2 = locations[3];
+
+      final Location pageTopLeftLocation = Location(vline1[0].x, hline1[0].y);
+      final Location pageTopRightLocation = Location(vline2[0].x, hline1[1].y);
+      final Location pageBottomLeftLocation = Location(vline1[1].x, hline2[0].y);
+      final Location pageBottomRightLocation = Location(vline2[1].x, hline2[1].y);
+
+      img.drawCircle(_image, pageTopLeftLocation.x.toInt(), pageTopLeftLocation.y.toInt(), 10, img.getColor(250, 0, 0));
+      img.drawCircle(_image, pageTopRightLocation.x.toInt(), pageTopRightLocation.y.toInt(), 10, img.getColor(250, 255, 0));
+      img.drawCircle(_image, pageBottomLeftLocation.x.toInt(), pageBottomLeftLocation.y.toInt(), 10, img.getColor(250, 255, 255));
+      img.drawCircle(_image, pageBottomRightLocation.x.toInt(), pageBottomRightLocation.y.toInt(), 10, img.getColor(0, 0, 0));
     }
+
+    // lines.forEach((e) {
+    //   drawLinesWithOffsett(_image, e, cropImageX, cropImageY);
+    // });
+    
+
+    // img.drawLine(_image, cropImageX, cropImageY, cropImageX + imageShrinkedToPaperArea.width, cropImageY, img.getColor(0, 255, 0));
+    // img.drawLine(_image, cropImageX, cropImageY + imageShrinkedToPaperArea.height, cropImageX + imageShrinkedToPaperArea.width, cropImageY + imageShrinkedToPaperArea.height, img.getColor(0, 255, 0));
 
     initializeData(resizedImage);
     _pageDescription = (new TanslateCoordinates(pageDescription)).getPageDescription(resizedImage.width.toDouble(), resizedImage.height.toDouble());
     documentElements = _pageDescription.getDocumentElements(context);
-
-    var cropImageX = _pageDescription.pageTopLeftLocation.x.toInt();
-    var cropImageY = _pageDescription.pageTopLeftLocation.y.toInt();
-
-    var imageShrinkedToPaperArea = img.copyCrop(_image, cropImageX, cropImageY, _pageDescription.pageWidth.toInt(), _pageDescription.pageHeight.toInt());
-    imageShrinkedToPaperArea = img.grayscale(imageShrinkedToPaperArea);
-
-    HoughTransform ht = HoughTransform(imageShrinkedToPaperArea, thetaSubunitsPerDegree: 1, rhoSubunits: 1, luminanceThreashold: 200);
-
-    var lines = ht.getLines();
-    lines.forEach((e) {
-      for (int x = 0; x < imageShrinkedToPaperArea.width; x++) {
-        var y = (-cos(e.theta) / sin(e.theta)) * x + (e.rho / sin(e.theta));
-
-        if (y > 0 && y.toInt() <= imageShrinkedToPaperArea.height) {
-          _image.setPixel(cropImageX + x, cropImageY + y.toInt(), 0xFF00FF00);
-        }
-      }
-
-      for (int y = 0; y < imageShrinkedToPaperArea.height; y++) {
-        var x = (-sin(e.theta) / cos(e.theta)) * y + (e.rho / cos(e.theta));
-
-        if (x > 0 && x.toInt() <= imageShrinkedToPaperArea.width) {
-          _image.setPixel(cropImageX + x.toInt(), cropImageY + y, 0xFFFFFF00);
-        }
-      }
-    });
   }
 
   void initializeData(img.Image image) {
@@ -153,12 +152,94 @@ class DocumentTemplateProcessor {
   }
 
   Future<bool> loadData() async {
-    _image = await _loadSavedImage();
+    //_image = await _loadSavedImage();
+
+    _image = img.Image(1024, 1820);
+
+    img.fill(_image, img.getColor(0, 0, 0));
+
+    // img.drawLine(_image, 100, 150, 500, 500, img.getColor(255, 255, 255));
+    // img.drawLine(_image, 500, 100, 500, 500, img.getColor(255, 255, 255));
+    // img.drawLine(_image, 100, 100, 500, 100, img.getColor(255, 255, 255));
+    // img.drawLine(_image, 1000, 100, 500, 500, img.getColor(255, 255, 255));
+    // img.drawLine(_image, 1000, 100, 500, 200, img.getColor(255, 255, 255));
+    // img.drawLine(_image, 1000, 000, 500, 400, img.getColor(255, 255, 255));
+
+    // img.drawLine(_image, 1000, 200, 500, 500, img.getColor(255, 255, 255));
+    // img.drawLine(_image, 1000, 300, 500, 600, img.getColor(255, 255, 255));
+    // img.drawLine(_image, 1000, 400, 500, 700, img.getColor(255, 255, 255));
+
+    // img.drawLine(_image, 1000, 500, 500, 200, img.getColor(255, 255, 255));
+    // img.drawLine(_image, 1000, 600, 500, 300, img.getColor(255, 255, 255));
+    // img.drawLine(_image, 1000, 700, 500, 400, img.getColor(255, 255, 255));
+
+    img.drawLine(_image, 120, 100, 100, 500, img.getColor(255, 255, 255));
+
+    img.drawLine(_image, 90, 100, 100, 500, img.getColor(255, 255, 255));
+
+    img.drawLine(_image, 100, 100, 100, 800, img.getColor(255, 255, 255));
+    img.drawLine(_image, 100, 100, 600, 100, img.getColor(255, 255, 255));
+    img.drawLine(_image, 600, 100, 600, 800, img.getColor(255, 255, 255));
+    img.drawLine(_image, 100, 800, 600, 800, img.getColor(255, 255, 255));
+
+    img.drawLine(_image, 100 + 300, 100 + 300, 100 + 300, 800 + 300, img.getColor(255, 255, 255));
+    img.drawLine(_image, 100 + 300, 100 + 300, 600 + 300, 100 + 300, img.getColor(255, 255, 255));
+    img.drawLine(_image, 600 + 300, 100 + 300, 600 + 300, 800 + 300, img.getColor(255, 255, 255));
+    img.drawLine(_image, 100 + 300, 800 + 300, 600 + 300, 800 + 300, img.getColor(255, 255, 255));
+
+    // _image.setPixel(500, 500, img.getColor(255,255,255));
+
+    _image = img.sobel(_image);
+
+    initializeData(_image);
+
+    HoughTransform ht = HoughTransform(_image, thetaSubunitsPerDegree: 10, rhoSubunits: 1, luminanceThreashold: 200);
+
+    var lines = ht.getLines();
+    lines.forEach((e) {
+      drawLines(e);
+    });
+
     if (_image != null) {
       initializeData(_image);
       documentElements = await _loadDocumentElements();
     }
     return _image != null;
+  }
+
+  void drawLines(ThetaRho e) {
+    if (cos(e.theta) != 0 && sin(e.theta) != 0) {
+      var x1 = 0;
+      var y1 = (-cos(e.theta) / sin(e.theta)) * x1 + (e.rho / sin(e.theta));
+      var x2 = x1 + 1000;
+      var y2 = (-cos(e.theta) / sin(e.theta)) * x2 + (e.rho / sin(e.theta));
+
+      img.drawLine(_image, x1.toInt(), y1.toInt(), x2.toInt(), y2.toInt(), img.getColor(255, 0, 0));
+    }
+  }
+
+  void drawLinesWithOffsett(img.Image image, ThetaRho e, int xOffset, int yOffset) {
+    var x1 = 0;
+    var y1 = (-cos(e.theta) / sin(e.theta)) * x1 + (e.rho / sin(e.theta));
+    var x2 = x1 + 1000;
+    var y2 = (-cos(e.theta) / sin(e.theta)) * x2 + (e.rho / sin(e.theta));
+
+    img.drawLine(image, x1.toInt() + xOffset, y1.toInt() + yOffset, x2.toInt() + xOffset, y2.toInt() + yOffset, img.getColor(0, 0, 0));
+  }
+
+  List<Location> getLineCoordinates(ThetaRho e, int xOffset, int yOffset, List<int> rectangle) {
+    if (cos(e.theta) != 0 && sin(e.theta) != 0) {
+      var x1 = 0;
+      var y1 = (-cos(e.theta) / sin(e.theta)) * x1 + (e.rho / sin(e.theta));
+      var x2 = x1 + 1000;
+      var y2 = (-cos(e.theta) / sin(e.theta)) * x2 + (e.rho / sin(e.theta));
+
+      List<int> line = [x1.toInt(), y1.toInt(), x2.toInt(), y2.toInt()];
+      img.clipLine(line, rectangle);
+
+      return [Location((line[0] + xOffset).toDouble(), (line[1] + yOffset).toDouble()), Location((line[2] + xOffset).toDouble(), (line[3] + yOffset).toDouble())];
+    }
+    return null;
   }
 
   void _saveImage() {

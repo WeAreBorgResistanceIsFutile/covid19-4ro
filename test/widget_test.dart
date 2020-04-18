@@ -10,13 +10,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   testWidgets('Matrix modification', (WidgetTester tester) async {
-    // HoughTransform ht = HoughTransform();
-    // var binaryMatrix = ht.createMatrix<bool>(3, 3, () => false);
-
-    // binaryMatrix[2][2] = true;
-
-    // print(matrixToString<bool>(binaryMatrix));
-    // print(DateTime.now());
+    
   });
 
 }
