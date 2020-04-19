@@ -60,7 +60,8 @@ class PageDescription {
       reasonOption7: DocumentText(32, 191, 'X', 0),
       reasonOption8: DocumentText(32, 195, 'X', 0),
       reasonOption9: DocumentText(32, 202, 'X', 0),
-      reasonOption10: DocumentText(32, 207, 'X', 0)
+      reasonOption10: DocumentText(32, 207, 'X', 0),
+      date: DocumentText(56, 234, '28/04/2020', 0)
     };
   }
 

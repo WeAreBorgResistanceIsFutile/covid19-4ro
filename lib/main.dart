@@ -6,7 +6,6 @@ import 'package:url_launcher/url_launcher.dart';
 import 'Forms/addressForm.dart';
 import 'Lists/statementList.dart';
 import 'Lists/personList.dart';
-import 'statementTemplateWidget.dart';
 import 'localizations.dart';
 
 Future<void> main() async {

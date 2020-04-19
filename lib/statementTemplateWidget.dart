@@ -5,6 +5,7 @@ import 'package:covid19_4ro/widgets/myFloatingActionButton.dart';
 import 'package:covid19_4ro/widgets/zoomableImage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'documentTemplateProcessor.dart';
 
 import 'dart:ui' as ui;
@@ -37,9 +38,15 @@ class StatementTemplateWidgetState extends State<StatementTemplateWidget> {
   Widget build(BuildContext context) {
     if (documentTemplateProcessor != null && documentTemplateProcessor.isImageLoaded) {
       _decorateImage();
-    } 
+    }
 
     return Scaffold(
+      appBar: AppBar(
+        title: getLocalizedText('StatementTemplateWidgetTitle'),
+        actions: <Widget>[
+          IconButton(icon: Icon(Icons.info), onPressed: () => _showAlertWithDownloadButton(getLocalizedValue('oops'), getLocalizedValue('StatementTemplateMissing'), getLocalizedValue('StatementTemplateLink'))),
+        ],
+      ),
       body: Stack(
         children: <Widget>[
           documentTemplateProcessor != null && documentTemplateProcessor.isImageLoaded ? capturedImageWidget() : noImageWidget(),
@@ -156,6 +163,48 @@ class StatementTemplateWidgetState extends State<StatementTemplateWidget> {
         }
       });
     });
+  }
+
+  Future<void> _showAlertWithDownloadButton(String title, String message, String url) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text(message),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            FlatButton(
+              child: getLocalizedText('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            FlatButton(
+              child: getLocalizedText('DownloadAndOpen'),
+              onPressed: () async {
+                if (await canLaunch(url)) {
+                  await launch(
+                    url,
+                    forceSafariVC: false,
+                    forceWebView: false,
+                    headers: <String, String>{'my_header_key': 'my_header_value'},
+                  );
+                } else {
+                  throw 'Could not launch $url';
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   String getLocalizedValue(String key) => AppLocalizations.of(context).translate(key);

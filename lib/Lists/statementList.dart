@@ -5,13 +5,13 @@ import 'package:covid19_4ro/Forms/statementOnYourLiabilityForm.dart';
 import 'package:covid19_4ro/Lists/personList.dart';
 
 import 'package:covid19_4ro/Model/statementOnYourLiability.dart';
+import 'package:covid19_4ro/Repository/addressRepository.dart';
+import 'package:covid19_4ro/Repository/personRepository.dart';
 import 'package:covid19_4ro/Repository/statementOnYourLiabilityRepository.dart';
+import 'package:covid19_4ro/statementGenerator.dart';
 import 'package:flutter/material.dart';
 import 'package:gallery_saver/gallery_saver.dart';
-import 'package:image/image.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:progress_dialog/progress_dialog.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../localizations.dart';
 
@@ -93,75 +93,37 @@ class StatementListState extends State<StatementListWidget> {
   }
 
   Future<void> _navigateToStatementViewer(String key) async {
-    // ProgressDialog pr;
-    // try {
-    //   var personRepository = new PersonRepository();
-    //   var personList = await personRepository.readData();
+    var personRepository = new PersonRepository();
+    var persons = await personRepository.readData();
 
-    //   if (personList.length == 0) {
-    //     await _showAlert(getLocalizedValue('oops'), getLocalizedValue('PersonsMissing'));
-    //     _navigateToPersonList();
-    //     return;
-    //   }
+    if (persons.length > 0) persons = persons.where((p) => p.templateName != null && p.templateName.isNotEmpty).toList();
 
-    //   var addressRepository = new AddressRepository();
-    //   var address = await addressRepository.readData();
+    if (persons.length == 0) {
+      await _showAlert(getLocalizedValue('oops'), getLocalizedValue('PersonsMissing'));
+      _navigateToPersonList();
+      return;
+    }
 
-    //   if (address == null || (address.addressLine1.isEmpty && address.addressLine2.isEmpty)) {
-    //     await _showAlert(getLocalizedValue('oops'), getLocalizedValue('AddressMissing'));
-    //     _navigateToAddressEditor();
-    //     return;
-    //   }
+    var addressRepository = new AddressRepository();
+    var address = await addressRepository.readData();
 
-    //   var statement = _statements.firstWhere((element) => element.key == key);
+    if (address == null || (address.addressLine1.isEmpty && address.addressLine2.isEmpty)) {
+      await _showAlert(getLocalizedValue('oops'), getLocalizedValue('AddressMissing'));
+      _navigateToAddressEditor();
+      return;
+    }
 
-    //   ProgressDialog pr = buildProgressDialog();
-    //   await pr.show();
-    //   pr.update(progress: 0, message: getLocalizedValue("StatementGenerationInProgress"));
+    var statement = _statements.firstWhere((element) => element.key == key);
 
-    //   for (var i = 0; i < personList.length; i++) {
-    //     var person = personList[i];
-    //     var templateProcessor = new DocumentTemplateProcessor();
-    //     if (await templateProcessor.loadData()) {
-    //       templateProcessor.initializePersponalInformation(person);
-    //       templateProcessor.initializeAddressInformation(address);
-    //       templateProcessor.initializeStatementInformation(statement);
-
-    //       if (templateProcessor.isImageLoaded) {
-    //         var imageToBeDisplayed = templateProcessor.decorateImageWithText();
-    //         await _saveImageToGalery(imageToBeDisplayed);
-
-    //         var message = getLocalizedValue("StatementGenerated").replaceAll("#", person.name);
-    //         pr.update(progress: (((i + 1) / personList.length) * 100).roundToDouble(), message: message);
-    //       }
-    //     } else {
-    //       if (pr != null && pr.isShowing()) pr.hide();
-    //       await _showAlertWithDownloadButton(getLocalizedValue('oops'), getLocalizedValue('StatementTemplateMissing'), getLocalizedValue('StatementTemplateLink'));
-
-    //       //_navigateToImageTemplateViewer();
-    //       return;
-    //     }
-    //   }
-
-    //   pr.update(progress: 100, message: getLocalizedValue("StatementGenerationEnded"));
-    //   if (pr != null && pr.isShowing()) pr.hide();
-    // } catch (e) {
-    //   if (pr != null && pr.isShowing()) pr.hide();
-    // }
+    StatementGenerator sg = StatementGenerator(context, statement);
+    sg.generateStatements(persons, address, _saveImageToGalery);
   }
 
-  ProgressDialog buildProgressDialog() {
-    var pr = ProgressDialog(context, type: ProgressDialogType.Download, isDismissible: false);
-    pr.style(progress: 0, maxProgress: 100);
-    return pr;
-  }
-
-  Future<void> _saveImageToGalery(dynamic imageToBeDisplayed) async {
+  Future<void> _saveImageToGalery(List<int> data) async {
     final directory = await getTemporaryDirectory();
-    final filePath = '${directory.path}/${(new UniqueKey()).toString()}.jpeg';
-
-    File(filePath).writeAsBytesSync(encodeJpg(imageToBeDisplayed));
-    GallerySaver.saveImage(filePath);
+    final filePath = '${directory.path}/${DateTime.now().millisecondsSinceEpoch.toString()}.jpeg';
+    await File(filePath).writeAsBytes(data);
+    await GallerySaver.saveImage(filePath);
   }
 
   void _navigateToStatementCreator() {
@@ -185,24 +147,6 @@ class StatementListState extends State<StatementListWidget> {
     });
   }
 
-  dynamic _navigateToScaffold(StatefulWidget widget, String title) async {
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute<void>(
-        builder: (BuildContext context) {
-          return Scaffold(
-              appBar: AppBar(
-                title: Text(title),
-              ),
-              body: Center(
-                child: widget,
-              ));
-        },
-      ),
-    );
-    return result;
-  }
-
   Future<List<StatementOnYourLiability>> _loadState() async {
     StatementOnYourLiabilityRepository repo = new StatementOnYourLiabilityRepository();
     var data = await repo.readData();
@@ -220,10 +164,6 @@ class StatementListState extends State<StatementListWidget> {
     repo.writeData(statements);
   }
 
-  // void _navigateToImageTemplateViewer() {
-  //   _navigateToScaffold(StatementTemplateWidget(), getLocalizedValue('StatementTemplateWidgetTitle'));
-  // }
-
   void _navigateToAddressEditor() {
     _navigateToScaffold(AddressWidget(), getLocalizedValue('AddressWidgetTitle'));
   }
@@ -238,6 +178,24 @@ class StatementListState extends State<StatementListWidget> {
       MaterialPageRoute<void>(builder: (BuildContext context) {
         return Center(child: widget);
       }),
+    );
+    return result;
+  }
+
+  dynamic _navigateToScaffold(StatefulWidget widget, String title) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) {
+          return Scaffold(
+              appBar: AppBar(
+                title: Text(title),
+              ),
+              body: Center(
+                child: widget,
+              ));
+        },
+      ),
     );
     return result;
   }
@@ -261,48 +219,6 @@ class StatementListState extends State<StatementListWidget> {
               child: getLocalizedText('OK'),
               onPressed: () {
                 Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<void> _showAlertWithDownloadButton(String title, String message, String url) async {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false, // user must tap button!
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(title),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text(message),
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            FlatButton(
-              child: getLocalizedText('OK'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            FlatButton(
-              child: getLocalizedText('DownloadAndOpen'),
-              onPressed: () async {
-                if (await canLaunch(url)) {
-                  await launch(
-                    url,
-                    forceSafariVC: false,
-                    forceWebView: false,
-                    headers: <String, String>{'my_header_key': 'my_header_value'},
-                  );
-                } else {
-                  throw 'Could not launch $url';
-                }
               },
             ),
           ],

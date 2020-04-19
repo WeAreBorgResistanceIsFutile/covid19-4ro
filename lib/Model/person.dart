@@ -23,7 +23,7 @@ class Person extends ModelBase {
   Person(this._firstName, this._lastName, this._birthday, this._templateName) : super.fromJson(null);  
   Person.withStatementTemplate(this._firstName, this._lastName, this._birthday, this.personsStatementTemplete) : super.fromJson(null)
   {
-    this._templateName = personsStatementTemplete.templateName;
+    this._templateName = personsStatementTemplete?.templateName;
   }
 
   @override

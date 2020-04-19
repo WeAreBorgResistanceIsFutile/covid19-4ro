@@ -23,9 +23,7 @@ class DocumentTemplateProcessor {
 
   get isImageLoaded => documentTemplate?.image != null;
 
-  DocumentTemplateProcessor.fromName(String templateName) {
-    documentTemplate = DocumentTemplate(templateName);
-  }
+  DocumentTemplateProcessor();
   DocumentTemplateProcessor.fromTemplate(this.documentTemplate);
 
   DocumentTemplateProcessor.fromCameraImage(String imagePath, PageDescription pageDescription) {
@@ -76,6 +74,11 @@ class DocumentTemplateProcessor {
     // }
     pageDescription = (new TanslateCoordinates(pageDescription)).getPageDescription(resizedImage.width.toDouble(), resizedImage.height.toDouble());
     documentTemplate = DocumentTemplate.fromImage(resizedImage, pageDescription);
+  }
+
+  Future<void> loadTemplate(String name) async {
+    documentTemplate = DocumentTemplate();
+    await documentTemplate.loadTemplate(name);
   }
 
   void initializeData(img.Image image) {}

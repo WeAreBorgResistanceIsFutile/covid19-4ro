@@ -4,7 +4,6 @@ import '../Repository/documentTextsRepository.dart';
 import '../Repository/templateImageRepository.dart';
 import 'package:image/image.dart' as img;
 
-
 import '../houghTransform.dart';
 import 'address.dart';
 import 'documentElement.dart';
@@ -29,22 +28,19 @@ class DocumentTemplate {
   set x(value) => x = value;
   set y(value) => y = value;
 
-  DocumentTemplate(this.templateName) {
-    TemplateImageRepository templateImageRepository = TemplateImageRepository(this.templateName);
-    templateImageRepository.readData().then((value) {
-      image = value;
-
-      DocumentTextsRepository documentTextRepository = DocumentTextsRepository(this.templateName);
-      documentTextRepository.readData().then((value) {
-        documentElements = value;
-        documentTemplateLoaded = true;
-      });
-    });
-  }
+  DocumentTemplate();
 
   DocumentTemplate.fromImage(this.image, PageDescription pageDescription) {
     this.templateName = DateTime.now().microsecondsSinceEpoch.toString();
     documentElements = pageDescription.getDocumentElements();
+    documentTemplateLoaded = true;
+  }
+
+  Future<void> loadTemplate(String templateName) async {
+    TemplateImageRepository templateImageRepository = TemplateImageRepository(templateName);
+    DocumentTextsRepository documentTextRepository = DocumentTextsRepository(templateName);
+    image = await templateImageRepository.readData();
+    documentElements = await documentTextRepository.readData();
     documentTemplateLoaded = true;
   }
 

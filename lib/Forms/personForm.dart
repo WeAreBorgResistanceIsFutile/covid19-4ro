@@ -42,9 +42,10 @@ class PersonWidgetState extends State<PersonWidget> {
     selectedDate = p.getBirthday();
     _firstNameController.text = p.firstName;
     _lastNameController.text = p.lastName;
-    if (p.templateName != null && p.templateName.isNotEmpty) _statementTemplate = DocumentTemplate(p.templateName);
-
-    setState(() {});
+    if (p.templateName != null && p.templateName.isNotEmpty) {
+      _statementTemplate = DocumentTemplate();
+      _statementTemplate.loadTemplate(p.templateName).then((value) => setState);
+    }
   }
 
   @override
@@ -104,8 +105,12 @@ class PersonWidgetState extends State<PersonWidget> {
     return Padding(
       padding: const EdgeInsets.all(10.0),
       child: RaisedButton(
-        onPressed: () {
+        onPressed: () async {
           if (_formKey.currentState.validate()) {
+            if (_statementTemplate == null) {
+              await _showAlert(getLocalizedValue('oops'), getLocalizedValue('StatementTemplateMissingWarning'));
+            }
+
             var p = _createPerson(_firstNameController.text, _lastNameController.text, selectedDate, _statementTemplate);
             _navigateBack(p);
           }
@@ -116,7 +121,7 @@ class PersonWidgetState extends State<PersonWidget> {
   }
 
   Future<void> _navigateToImageTemplateViewer() async {
-    var statementTemplate = await _navigateToScaffold(StatementTemplateWidget(_statementTemplate), getLocalizedValue('StatementTemplateWidgetTitle'));
+    var statementTemplate = await _navigateTo(StatementTemplateWidget(_statementTemplate));
     if (statementTemplate != null) {
       setState(() {
         _statementTemplate = statementTemplate;
@@ -128,19 +133,39 @@ class PersonWidgetState extends State<PersonWidget> {
     return new Person.withStatementTemplate(firstName, lastName, new Birthday(birthday), statementTemplate);
   }
 
-  dynamic _navigateToScaffold(StatefulWidget widget, String title) async {
+  Future<void> _showAlert(String title, String message) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text(message),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            FlatButton(
+              child: getLocalizedText('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  dynamic _navigateTo(StatefulWidget widget) async {
     final result = await Navigator.push(
       context,
       MaterialPageRoute<void>(
         builder: (BuildContext context) {
-          return Scaffold(
-            appBar: AppBar(
-              title: Text(title),
-            ),
-            body: Center(
-              child: widget,
-            ),
-          );
+          return widget;
         },
       ),
     );
