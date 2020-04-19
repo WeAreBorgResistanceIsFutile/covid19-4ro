@@ -56,7 +56,7 @@ class PageDescription {
       reasonOption4: DocumentText(32, 161, 'X', 0),
       reasonOption5: DocumentText(32, 171, 'X', 0),
       reasonOption6: DocumentText(32, 181, 'X', 0),
-      agriculturalActivityDescription: DocumentText(38, 182, "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.", 0),
+      agriculturalActivityDescription: DocumentText(38, 182, "Ut enim ad minim veniam, quis nostrud exercitation", 0),
       reasonOption7: DocumentText(32, 191, 'X', 0),
       reasonOption8: DocumentText(32, 195, 'X', 0),
       reasonOption9: DocumentText(32, 202, 'X', 0),
