@@ -149,8 +149,7 @@ class DocumentTemplateProcessor {
   }
 
   void _drawTextOnImage(img.Image image, DocumentText c) {
-    drawString(image, arial_14, c.x.toInt(), c.y.toInt(), c.text, c.rotationAngle, color: c.color);    
-    img.drawString(image, font, x, y, string)
+    drawString(image, arial_14, c.x.toInt(), c.y.toInt(), c.text, c.rotationAngle, color: c.color); 
   }
 
   void saveData() {
