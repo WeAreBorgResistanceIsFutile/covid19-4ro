@@ -142,7 +142,7 @@ class StatementListState extends State<StatementListWidget> {
           if (pr != null && pr.isShowing()) pr.hide();
           await _showAlertWithDownloadButton(getLocalizedValue('oops'), getLocalizedValue('StatementTemplateMissing'), getLocalizedValue('StatementTemplateLink'));
 
-          _navigateToImageTemplateViewer();
+          //_navigateToImageTemplateViewer();
           return;
         }
       }
@@ -224,9 +224,9 @@ class StatementListState extends State<StatementListWidget> {
     repo.writeData(statements);
   }
 
-  void _navigateToImageTemplateViewer() {
-    _navigateToScaffold(StatementTemplateWidget(), getLocalizedValue('StatementTemplateWidgetTitle'));
-  }
+  // void _navigateToImageTemplateViewer() {
+  //   _navigateToScaffold(StatementTemplateWidget(), getLocalizedValue('StatementTemplateWidgetTitle'));
+  // }
 
   void _navigateToAddressEditor() {
     _navigateToScaffold(AddressWidget(), getLocalizedValue('AddressWidgetTitle'));

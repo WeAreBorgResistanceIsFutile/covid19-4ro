@@ -40,7 +40,6 @@ class ApplicationState extends State<StatePresenter> {
         title: getLocalizedText('StatementListWidgetTitle'),
         actions: <Widget>[
           // Add 3 lines from here...
-          IconButton(icon: Icon(Icons.input), onPressed: _navigateToImageTemplateViewer),
           IconButton(icon: Icon(Icons.person), onPressed: _navigateToPersonList),
           IconButton(icon: Icon(Icons.home), onPressed: _navigateToAddressEditor),
           IconButton(icon: Icon(Icons.info), onPressed: () => _showAlert(getLocalizedValue('InfoTitle'), getLocalizedValue('InfoMessage'))),
@@ -48,11 +47,7 @@ class ApplicationState extends State<StatePresenter> {
       ),
       body: statementList,
     );
-  }
-
-  void _navigateToImageTemplateViewer() {
-    _navigateToScaffold(StatementTemplateWidget(), getLocalizedValue('StatementTemplateWidgetTitle'));
-  }
+  } 
 
   void _navigateToPersonList() {
     _navigateTo(PersonListWidget());

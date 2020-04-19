@@ -29,7 +29,6 @@ class DocumentTemplateProcessor {
   int _x, _y;
 
   get x => _x ?? 0;
-
   get y => _y ?? 0;
 
   get isImageLoaded => _image != null;
@@ -82,7 +81,7 @@ class DocumentTemplateProcessor {
 
     initializeData(resizedImage);
     _pageDescription = (new TanslateCoordinates(pageDescription)).getPageDescription(resizedImage.width.toDouble(), resizedImage.height.toDouble());
-    documentElements = _pageDescription.getDocumentElements(context);
+    documentElements = _pageDescription.getDocumentElements();
   }
 
   void initializeData(img.Image image) {
@@ -149,7 +148,7 @@ class DocumentTemplateProcessor {
   }
 
   void _drawTextOnImage(img.Image image, DocumentText c) {
-    drawString(image, arial_14, c.x.toInt(), c.y.toInt(), c.text, c.rotationAngle, color: c.color); 
+    drawString(image, arial_14, c.x.toInt(), c.y.toInt(), c.text, c.rotationAngle, color: c.color);
   }
 
   void saveData() {

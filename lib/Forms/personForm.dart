@@ -4,6 +4,7 @@ import 'package:covid19_4ro/Model/person.dart';
 import 'package:flutter/material.dart';
 
 import '../localizations.dart';
+import '../statementTemplateWidget.dart';
 
 class PersonWidget extends StatefulWidget {
   final Person person;
@@ -17,6 +18,7 @@ class PersonWidget extends StatefulWidget {
 class PersonWidgetState extends State<PersonWidget> {
   final _formKey = GlobalKey<FormState>();
   DateTime selectedDate = DateTime.now();
+  String templatePath;
 
   final TextEditingController _firstNameController = new TextEditingController();
   final TextEditingController _lastNameController = new TextEditingController();
@@ -60,7 +62,7 @@ class PersonWidgetState extends State<PersonWidget> {
 
   Padding buildLastNameField() {
     final FormHelper fh = new FormHelper();
-    return fh.builTextField(_lastNameController,getLocalizedValue('lastName'), getLocalizedValue('firstNameValidation'), 10);
+    return fh.builTextField(_lastNameController, getLocalizedValue('lastName'), getLocalizedValue('firstNameValidation'), 10);
   }
 
   Padding buildFirstNameField() {
@@ -76,7 +78,20 @@ class PersonWidgetState extends State<PersonWidget> {
         child: Row(
           children: <Widget>[
             Text(message),
-            IconButton(icon: Icon(Icons.edit), onPressed: () => _selectDate(context)),
+            IconButton(icon: Icon(Icons.edit), onPressed: _navigateToImageTemplateViewer),
+          ],
+        ));
+  }
+
+  Padding buildImageField(BuildContext context) {
+    var message = templatePath == null ? getLocalizedValue("StatementTemplateNotSet") : getLocalizedValue("StatementTemplateSet");
+
+    return Padding(
+        padding: EdgeInsets.all(10.0),
+        child: Row(
+          children: <Widget>[
+            Text(message),
+            IconButton(icon: templatePath == null ? Icon(Icons.camera_alt) : Icon(Icons.image), onPressed: () => _selectDate(context)),
           ],
         ));
   }
@@ -96,8 +111,32 @@ class PersonWidgetState extends State<PersonWidget> {
     );
   }
 
+  Future<void> _navigateToImageTemplateViewer() async {
+    var path = await _navigateToScaffold(StatementTemplateWidget(templatePath), getLocalizedValue('StatementTemplateWidgetTitle'));
+    if (path != null) templatePath = path;
+  }
+
   Person _createPerson(String firstName, String lastName, DateTime birthday) {
     return new Person(firstName, lastName, new Birthday(birthday));
+  }
+
+  dynamic _navigateToScaffold(StatefulWidget widget, String title) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) {
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(title),
+            ),
+            body: Center(
+              child: widget,
+            ),
+          );
+        },
+      ),
+    );
+    return result;
   }
 
   void _navigateBack(Person person) {

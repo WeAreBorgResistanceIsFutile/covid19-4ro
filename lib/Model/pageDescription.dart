@@ -41,23 +41,23 @@ class PageDescription {
 
   PageDescription(this.pageTopLeftLocation, this.pageTopRightLocation, this.pageBottomLeftLocation, this.pageBottomRightLocation, this.canvasSize, {this.rotationAngle = 0});
 
-  Map<String, DocumentText> _getDocumentElementsWithOnPaperCoordinates(BuildContext context) {
+  Map<String, DocumentText> _getDocumentElementsWithOnPaperCoordinates() {
     return {
-      firstName: DocumentText(58, 54, _getLocalizedValue(context, 'firstName'), 0),
-      lastName: DocumentText(120, 54, _getLocalizedValue(context, 'lastName'), 0),
+      firstName: DocumentText(58, 54, "Lorem ipsum", 0),
+      lastName: DocumentText(120, 54, "dolor sit amet", 0),
       dayOfBirth: DocumentText(58, 63, '28', 0),
       monthOfBirth: DocumentText(72, 63, '05', 0),
       yearOfBirth: DocumentText(86, 63, '1968', 0),
-      addressLine1: DocumentText(58, 71, _getLocalizedValue(context, 'addressLine1'), 0),
-      addressLine2: DocumentText(58, 79, _getLocalizedValue(context, 'addressLine2'), 0),
-      destination: DocumentText(24, 106, _getLocalizedValue(context, 'destination'), 0),
+      addressLine1: DocumentText(58, 71, "consectetur adipiscing elit", 0),
+      addressLine2: DocumentText(58, 79, "sed do eiusmod tempor incididunt", 0),
+      destination: DocumentText(24, 106, "ut labore et dolore magna aliqua", 0),
       reasonOption1: DocumentText(32, 132, 'X', 0),
       reasonOption2: DocumentText(32, 142, 'X', 0),
       reasonOption3: DocumentText(32, 152, 'X', 0),
       reasonOption4: DocumentText(32, 161, 'X', 0),
       reasonOption5: DocumentText(32, 171, 'X', 0),
       reasonOption6: DocumentText(32, 181, 'X', 0),
-      agriculturalActivityDescription: DocumentText(38, 182, _getLocalizedValue(context, 'agriculturalActivityDescription'), 0),
+      agriculturalActivityDescription: DocumentText(38, 182, "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.", 0),
       reasonOption7: DocumentText(32, 191, 'X', 0),
       reasonOption8: DocumentText(32, 195, 'X', 0),
       reasonOption9: DocumentText(32, 202, 'X', 0),
@@ -65,11 +65,11 @@ class PageDescription {
     };
   }
 
-  List<DocumentText> getPageElements(BuildContext context) => _getDocumentElementsWithOnPaperCoordinates(context).values.map((e) => _calculateCoordinates(e)).toList();
+  List<DocumentText> getPageElements(BuildContext context) => _getDocumentElementsWithOnPaperCoordinates().values.map((e) => _calculateCoordinates(e)).toList();
 
-  Map<String, DocumentText> getDocumentElements(BuildContext context) {
+  Map<String, DocumentText> getDocumentElements() {
     Map<String, DocumentText> retVar = {};
-    _getDocumentElementsWithOnPaperCoordinates(context).forEach((key, value) {
+    _getDocumentElementsWithOnPaperCoordinates().forEach((key, value) {
       retVar[key] = _calculateCoordinates(value);
     });
     return retVar;
@@ -83,6 +83,4 @@ class PageDescription {
     txt.rotationAngle = rotationAngle;
     return txt;
   }
-
-  String _getLocalizedValue(BuildContext context, String key) => AppLocalizations.of(context).translate(key);
 }

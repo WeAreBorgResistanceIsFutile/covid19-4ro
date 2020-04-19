@@ -10,15 +10,20 @@ import 'documentTemplateProcessor.dart';
 import 'dart:ui' as ui;
 
 class StatementTemplateWidget extends StatefulWidget {
+  String _imagePath;
   final DocumentTemplateProcessor documentTemplateProcessor = new DocumentTemplateProcessor();
 
+  StatementTemplateWidget(this._imagePath);
+
   @override
-  StatementTemplateWidgetState createState() => StatementTemplateWidgetState();
+  StatementTemplateWidgetState createState() => StatementTemplateWidgetState(_imagePath);
 }
 
 class StatementTemplateWidgetState extends State<StatementTemplateWidget> {
   String _imagePath;
   PageDescription _imagePageDescriptor;
+
+  StatementTemplateWidgetState(this._imagePath);
 
   @override
   Widget build(BuildContext context) {
