@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:covid19_4ro/Forms/addressForm.dart';
 import 'package:covid19_4ro/Forms/statementOnYourLiabilityForm.dart';
 import 'package:covid19_4ro/Lists/personList.dart';
@@ -10,8 +8,6 @@ import 'package:covid19_4ro/Repository/personRepository.dart';
 import 'package:covid19_4ro/Repository/statementOnYourLiabilityRepository.dart';
 import 'package:covid19_4ro/statementGenerator.dart';
 import 'package:flutter/material.dart';
-import 'package:gallery_saver/gallery_saver.dart';
-import 'package:path_provider/path_provider.dart';
 
 import '../localizations.dart';
 
@@ -116,14 +112,7 @@ class StatementListState extends State<StatementListWidget> {
     var statement = _statements.firstWhere((element) => element.key == key);
 
     StatementGenerator sg = StatementGenerator(context, statement);
-    sg.generateStatements(persons, address, _saveImageToGalery);
-  }
-
-  Future<void> _saveImageToGalery(List<int> data) async {
-    final directory = await getTemporaryDirectory();
-    final filePath = '${directory.path}/${DateTime.now().millisecondsSinceEpoch.toString()}.jpeg';
-    await File(filePath).writeAsBytes(data);
-    await GallerySaver.saveImage(filePath);
+    sg.generateStatements(persons, address);
   }
 
   void _navigateToStatementCreator() {

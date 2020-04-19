@@ -55,5 +55,6 @@
     "StatementTemplateNotSet": "Nincs személyhez rendelt nyilatkozat sablon",
     "StatementTemplateSet": "Nyilatkozat sablon személyhez rendelve",
     "CaptureStatementTemplateTitle": "Sablon fotó készítése",
-    "StatementTemplateMissingWarning": "A generáláshoz szükség van egy nem kitöltött, de aláírt nyilatkozat képére! A személy részére nem generálható nyilatkozat."
+    "StatementTemplateMissingWarning": "A generáláshoz szükség van egy nem kitöltött, de aláírt nyilatkozat képére! A személy részére nem generálható nyilatkozat.",
+    "NO_EXTERNAL_STORAGE_WRITE_PERMISSION" : "Jogosultság hiányában nem folytatható a generálás!"
 }
