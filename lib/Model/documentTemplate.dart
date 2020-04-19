@@ -1,7 +1,9 @@
-import 'dart:io';
 import 'dart:math';
 
+import '../Repository/documentTextsRepository.dart';
+import '../Repository/templateImageRepository.dart';
 import 'package:image/image.dart' as img;
+
 
 import '../houghTransform.dart';
 import 'address.dart';
@@ -15,7 +17,8 @@ import 'statementOnYourLiability.dart';
 class DocumentTemplate {
   static const double Ratio = 0.75;
 
-  String templatePath;
+  bool documentTemplateLoaded = false;
+  String templateName;
   img.Image image;
   Map<String, DocumentText> documentElements = {};
 
@@ -23,14 +26,26 @@ class DocumentTemplate {
 
   get x => _x ?? 0;
   get y => _y ?? 0;
+  set x(value) => x = value;
+  set y(value) => y = value;
 
-  DocumentTemplate(this.templatePath, this.documentElements) {
-    this.image = img.decodeImage(File(templatePath).readAsBytesSync());
+  DocumentTemplate(this.templateName) {
+    TemplateImageRepository templateImageRepository = TemplateImageRepository(this.templateName);
+    templateImageRepository.readData().then((value) {
+      image = value;
+
+      DocumentTextsRepository documentTextRepository = DocumentTextsRepository(this.templateName);
+      documentTextRepository.readData().then((value) {
+        documentElements = value;
+        documentTemplateLoaded = true;
+      });
+    });
   }
 
-  DocumentTemplate.fromImage(String imagePath, PageDescription pageDescription) {
-    this.image = img.decodeImage(File(imagePath).readAsBytesSync());
+  DocumentTemplate.fromImage(this.image, PageDescription pageDescription) {
+    this.templateName = DateTime.now().microsecondsSinceEpoch.toString();
     documentElements = pageDescription.getDocumentElements();
+    documentTemplateLoaded = true;
   }
 
   void increaseX() {

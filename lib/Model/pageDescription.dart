@@ -1,7 +1,6 @@
 import 'package:covid19_4ro/Model/location.dart';
 import 'package:flutter/material.dart';
 
-import '../localizations.dart';
 import 'documentText.dart';
 
 class PageDescription {

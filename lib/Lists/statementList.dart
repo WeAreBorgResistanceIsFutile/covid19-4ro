@@ -5,10 +5,7 @@ import 'package:covid19_4ro/Forms/statementOnYourLiabilityForm.dart';
 import 'package:covid19_4ro/Lists/personList.dart';
 
 import 'package:covid19_4ro/Model/statementOnYourLiability.dart';
-import 'package:covid19_4ro/Repository/addressRepository.dart';
 import 'package:covid19_4ro/Repository/statementOnYourLiabilityRepository.dart';
-import 'package:covid19_4ro/Repository/personRepository.dart';
-import 'package:covid19_4ro/documentTemplateProcessor.dart';
 import 'package:flutter/material.dart';
 import 'package:gallery_saver/gallery_saver.dart';
 import 'package:image/image.dart';
@@ -17,7 +14,6 @@ import 'package:progress_dialog/progress_dialog.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../localizations.dart';
-import '../statementTemplateWidget.dart';
 
 class StatementListWidget extends StatefulWidget {
   @override
@@ -97,61 +93,61 @@ class StatementListState extends State<StatementListWidget> {
   }
 
   Future<void> _navigateToStatementViewer(String key) async {
-    ProgressDialog pr;
-    try {
-      var personRepository = new PersonRepository();
-      var personList = await personRepository.readData();
+    // ProgressDialog pr;
+    // try {
+    //   var personRepository = new PersonRepository();
+    //   var personList = await personRepository.readData();
 
-      if (personList.length == 0) {
-        await _showAlert(getLocalizedValue('oops'), getLocalizedValue('PersonsMissing'));
-        _navigateToPersonList();
-        return;
-      }
+    //   if (personList.length == 0) {
+    //     await _showAlert(getLocalizedValue('oops'), getLocalizedValue('PersonsMissing'));
+    //     _navigateToPersonList();
+    //     return;
+    //   }
 
-      var addressRepository = new AddressRepository();
-      var address = await addressRepository.readData();
+    //   var addressRepository = new AddressRepository();
+    //   var address = await addressRepository.readData();
 
-      if (address == null || (address.addressLine1.isEmpty && address.addressLine2.isEmpty)) {
-        await _showAlert(getLocalizedValue('oops'), getLocalizedValue('AddressMissing'));
-        _navigateToAddressEditor();
-        return;
-      }
+    //   if (address == null || (address.addressLine1.isEmpty && address.addressLine2.isEmpty)) {
+    //     await _showAlert(getLocalizedValue('oops'), getLocalizedValue('AddressMissing'));
+    //     _navigateToAddressEditor();
+    //     return;
+    //   }
 
-      var statement = _statements.firstWhere((element) => element.key == key);
+    //   var statement = _statements.firstWhere((element) => element.key == key);
 
-      ProgressDialog pr = buildProgressDialog();
-      await pr.show();
-      pr.update(progress: 0, message: getLocalizedValue("StatementGenerationInProgress"));
+    //   ProgressDialog pr = buildProgressDialog();
+    //   await pr.show();
+    //   pr.update(progress: 0, message: getLocalizedValue("StatementGenerationInProgress"));
 
-      for (var i = 0; i < personList.length; i++) {
-        var person = personList[i];
-        var templateProcessor = new DocumentTemplateProcessor();
-        if (await templateProcessor.loadData()) {
-          templateProcessor.initializePersponalInformation(person);
-          templateProcessor.initializeAddressInformation(address);
-          templateProcessor.initializeStatementInformation(statement);
+    //   for (var i = 0; i < personList.length; i++) {
+    //     var person = personList[i];
+    //     var templateProcessor = new DocumentTemplateProcessor();
+    //     if (await templateProcessor.loadData()) {
+    //       templateProcessor.initializePersponalInformation(person);
+    //       templateProcessor.initializeAddressInformation(address);
+    //       templateProcessor.initializeStatementInformation(statement);
 
-          if (templateProcessor.isImageLoaded) {
-            var imageToBeDisplayed = templateProcessor.decorateImageWithText();
-            await _saveImageToGalery(imageToBeDisplayed);
+    //       if (templateProcessor.isImageLoaded) {
+    //         var imageToBeDisplayed = templateProcessor.decorateImageWithText();
+    //         await _saveImageToGalery(imageToBeDisplayed);
 
-            var message = getLocalizedValue("StatementGenerated").replaceAll("#", person.name);
-            pr.update(progress: (((i + 1) / personList.length) * 100).roundToDouble(), message: message);
-          }
-        } else {
-          if (pr != null && pr.isShowing()) pr.hide();
-          await _showAlertWithDownloadButton(getLocalizedValue('oops'), getLocalizedValue('StatementTemplateMissing'), getLocalizedValue('StatementTemplateLink'));
+    //         var message = getLocalizedValue("StatementGenerated").replaceAll("#", person.name);
+    //         pr.update(progress: (((i + 1) / personList.length) * 100).roundToDouble(), message: message);
+    //       }
+    //     } else {
+    //       if (pr != null && pr.isShowing()) pr.hide();
+    //       await _showAlertWithDownloadButton(getLocalizedValue('oops'), getLocalizedValue('StatementTemplateMissing'), getLocalizedValue('StatementTemplateLink'));
 
-          //_navigateToImageTemplateViewer();
-          return;
-        }
-      }
+    //       //_navigateToImageTemplateViewer();
+    //       return;
+    //     }
+    //   }
 
-      pr.update(progress: 100, message: getLocalizedValue("StatementGenerationEnded"));
-      if (pr != null && pr.isShowing()) pr.hide();
-    } catch (e) {
-      if (pr != null && pr.isShowing()) pr.hide();
-    }
+    //   pr.update(progress: 100, message: getLocalizedValue("StatementGenerationEnded"));
+    //   if (pr != null && pr.isShowing()) pr.hide();
+    // } catch (e) {
+    //   if (pr != null && pr.isShowing()) pr.hide();
+    // }
   }
 
   ProgressDialog buildProgressDialog() {

@@ -1,47 +1,48 @@
 import 'package:camera/camera.dart';
+import 'package:covid19_4ro/Model/documentTemplate.dart';
 import 'package:covid19_4ro/widgets/camera.dart';
 import 'package:covid19_4ro/widgets/myFloatingActionButton.dart';
 import 'package:covid19_4ro/widgets/zoomableImage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'Model/pageDescription.dart';
 import 'documentTemplateProcessor.dart';
 
 import 'dart:ui' as ui;
 
-class StatementTemplateWidget extends StatefulWidget {
-  String _imagePath;
-  final DocumentTemplateProcessor documentTemplateProcessor = new DocumentTemplateProcessor();
+import 'localizations.dart';
 
-  StatementTemplateWidget(this._imagePath);
+class StatementTemplateWidget extends StatefulWidget {
+  final DocumentTemplate _statementTemplate;
+
+  StatementTemplateWidget(this._statementTemplate);
 
   @override
-  StatementTemplateWidgetState createState() => StatementTemplateWidgetState(_imagePath);
+  StatementTemplateWidgetState createState() {
+    if (_statementTemplate != null)
+      return StatementTemplateWidgetState.fromStatementTemplate(_statementTemplate);
+    else
+      return StatementTemplateWidgetState();
+  }
 }
 
 class StatementTemplateWidgetState extends State<StatementTemplateWidget> {
-  String _imagePath;
-  PageDescription _imagePageDescriptor;
+  DocumentTemplateProcessor documentTemplateProcessor;
 
-  StatementTemplateWidgetState(this._imagePath);
+  StatementTemplateWidgetState();
+  StatementTemplateWidgetState.fromStatementTemplate(DocumentTemplate statementTemplate) {
+    documentTemplateProcessor = DocumentTemplateProcessor.fromTemplate(statementTemplate);
+  }
 
   @override
   Widget build(BuildContext context) {
-    if (_imagePath != null && !widget.documentTemplateProcessor.isImageLoaded) {
-      widget.documentTemplateProcessor.loadImageFromCamera(context, _imagePath, _imagePageDescriptor);
+    if (documentTemplateProcessor != null && documentTemplateProcessor.isImageLoaded) {
       _decorateImage();
-    } else if (_uiImage == null) {
-      try {
-        widget.documentTemplateProcessor.loadData().then((value) {
-          _decorateImage();
-        });
-      } catch (e) {}
-    }
+    } 
 
     return Scaffold(
       body: Stack(
         children: <Widget>[
-          _uiImage != null ? capturedImageWidget() : noImageWidget(),
+          documentTemplateProcessor != null && documentTemplateProcessor.isImageLoaded ? capturedImageWidget() : noImageWidget(),
           fabWidget(),
         ],
       ),
@@ -53,51 +54,50 @@ class StatementTemplateWidgetState extends State<StatementTemplateWidget> {
   }
 
   Widget capturedImageWidget() {
+    _decorateImage();
     return SizedBox.expand(
       child: Center(child: ZoomableImage(_uiImage, userTouchedImageAt: (int x, int y) => userTouchedImage(x, y))),
     );
   }
 
   void userTouchedImage(int x, int y) {
-    widget.documentTemplateProcessor.selectDocumentElement(x, y);
+    documentTemplateProcessor.selectDocumentElement(x, y);
     _decorateImage();
   }
 
   void increaseX() {
-    widget.documentTemplateProcessor.increaseX();
+    documentTemplateProcessor.increaseX();
     _decorateImage();
   }
 
   void increaseY() {
-    widget.documentTemplateProcessor.increaseY();
+    documentTemplateProcessor.increaseY();
     _decorateImage();
   }
 
   void decreaseX() {
-    widget.documentTemplateProcessor.decreaseX();
+    documentTemplateProcessor.decreaseX();
     _decorateImage();
   }
 
   void decreaseY() {
-    widget.documentTemplateProcessor.decreaseY();
+    documentTemplateProcessor.decreaseY();
     _decorateImage();
   }
 
   ui.Image _uiImage;
   void _decorateImage() {
-    if (widget.documentTemplateProcessor.isImageLoaded) {
-      var imageToBeDisplayed = widget.documentTemplateProcessor.decorateImageWithText();
-
+    if (documentTemplateProcessor.isImageLoaded) {
+      var imageToBeDisplayed = documentTemplateProcessor.decorateImageWithText();
       ui.decodeImageFromPixels(imageToBeDisplayed.getBytes(), imageToBeDisplayed.width, imageToBeDisplayed.height, ui.PixelFormat.rgba8888, (ui.Image img) {
         _uiImage = img;
-        setState(() {});
+        if (this.mounted) setState(() {});
       });
     }
   }
 
   void saveTemplate() {
-    widget.documentTemplateProcessor.saveData();
-    Navigator.pop(context);
+    Navigator.pop(context, documentTemplateProcessor.documentTemplate);
   }
 
   Widget fabWidget() {
@@ -136,7 +136,7 @@ class StatementTemplateWidgetState extends State<StatementTemplateWidget> {
   }
 
   Future openCamera() async {
-    widget.documentTemplateProcessor.resetData();
+    if (documentTemplateProcessor != null) documentTemplateProcessor.resetData();
 
     availableCameras().then((cameras) async {
       final result = await Navigator.push(
@@ -144,9 +144,7 @@ class StatementTemplateWidgetState extends State<StatementTemplateWidget> {
         MaterialPageRoute(
           builder: (context) {
             return Scaffold(
-              appBar: AppBar(
-                title: Text('Sablon foto keszitese'),
-              ),
+              appBar: AppBar(title: getLocalizedText('CaptureStatementTemplateTitle')),
               body: CameraWidget(cameras),
             );
           },
@@ -154,12 +152,12 @@ class StatementTemplateWidgetState extends State<StatementTemplateWidget> {
       );
       setState(() {
         if (result != null) {
-          if (_imagePath != result['path']) _uiImage = null;
-
-          _imagePath = result['path'];
-          _imagePageDescriptor = result['descriptor'];
+          documentTemplateProcessor = DocumentTemplateProcessor.fromCameraImage(result['path'], result['descriptor']);
         }
       });
     });
   }
+
+  String getLocalizedValue(String key) => AppLocalizations.of(context).translate(key);
+  Text getLocalizedText(String key) => Text(getLocalizedValue(key));
 }

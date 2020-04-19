@@ -4,9 +4,15 @@ import 'package:image/image.dart';
 import 'package:path_provider/path_provider.dart';
 
 class TemplateImageRepository {
-  String _repoName = "template";
+  String _repoName;
 
-  TemplateImageRepository();
+  TemplateImageRepository(this._repoName);
+
+  Future<Null> deleteRepository() async {
+    final file = await _localFile;
+
+    if (await file.exists()) file.delete();
+  }
 
   Future<Null> writeData(Image data) async {
     final file = await _localFile;
@@ -42,6 +48,6 @@ class TemplateImageRepository {
 
   Future<String> get _localFilePath async {
     final path = await _localPath;
-    return '$path/$_repoName.txt';
+    return '$path/$_repoName.jpeg';
   }
 }

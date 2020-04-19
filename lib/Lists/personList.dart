@@ -1,7 +1,9 @@
 import 'package:covid19_4ro/Forms/personForm.dart';
 import 'package:covid19_4ro/Model/birthday.dart';
 import 'package:covid19_4ro/Model/person.dart';
+import 'package:covid19_4ro/Repository/documentTextsRepository.dart';
 import 'package:covid19_4ro/Repository/personRepository.dart';
+import 'package:covid19_4ro/Repository/templateImageRepository.dart';
 import 'package:flutter/material.dart';
 
 import '../localizations.dart';
@@ -56,12 +58,10 @@ class PersonListState extends State<PersonListWidget> {
         key: Key(person.name),
         onDismissed: (direction) {
           setState(() {
+            _deletePersonStateStatementTemplate(person);
             _persons.removeAt(index);
             _saveState(_persons);
           });
-
-          var message = getLocalizedValue("PersonDeleted").replaceAll("#", person.name);
-          Scaffold.of(context).showSnackBar(SnackBar(content: Text(message)));
         },
         child: ListTile(
           title: Text(
@@ -78,7 +78,7 @@ class PersonListState extends State<PersonListWidget> {
   }
 
   Future<void> _navigateToPersonCreator() async {
-    Person person = new Person('', '', new Birthday(DateTime.now()));
+    Person person = new Person('', '', new Birthday(DateTime.now()), null);
     var p = await _navigateTo(
       PersonWidget(person),
       getLocalizedValue("NewPerson"),
@@ -92,6 +92,10 @@ class PersonListState extends State<PersonListWidget> {
   Future<void> _navigateToPersonEditor(Person person) async {
     var p = await _navigateTo(PersonWidget(person), getLocalizedValue("PersonDetails"));
     if (p != null) {
+      if (person.templateName != null && person.templateName != p.templateName) {
+        _deletePersonStateStatementTemplate(person);
+      }
+
       person.setFields(p);
       saveStateAndUpdateView();
     }
@@ -123,13 +127,31 @@ class PersonListState extends State<PersonListWidget> {
     return data;
   }
 
-  void _saveState(List<Person> personList) {
+  Future<void> _saveState(List<Person> personList) async {
+    await Future.forEach(personList.where((element) => element.personsStatementTemplete != null), (element) async {
+      var documentTextsRepository = DocumentTextsRepository(element.templateName);
+      await documentTextsRepository.writeData(element.personsStatementTemplete.documentElements);
+
+      var templateImageRepository = TemplateImageRepository(element.templateName);
+      await templateImageRepository.writeData(element.personsStatementTemplete.image);
+
+      element.personsStatementTemplete = null;
+    });
+
     PersonRepository repo = new PersonRepository();
-    repo.writeData(personList);
+    await repo.writeData(personList);
   }
 
   String getLocalizedValue(String key) => AppLocalizations.of(context).translate(key);
   Text getLocalizedText(String key) => Text(getLocalizedValue(key));
+}
+
+Future<void> _deletePersonStateStatementTemplate(Person person) async {
+  var documentTextsRepository = DocumentTextsRepository(person.templateName);
+  await documentTextsRepository.deleteRepository();
+
+  var templateImageRepository = TemplateImageRepository(person.templateName);
+  await templateImageRepository.deleteRepository();
 }
 
 class PersonListWidget extends StatefulWidget {

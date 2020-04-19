@@ -1,4 +1,5 @@
 import 'package:covid19_4ro/Model/birthday.dart';
+import 'package:covid19_4ro/Model/documentTemplate.dart';
 import 'package:covid19_4ro/Model/formHelper.dart';
 import 'package:covid19_4ro/Model/person.dart';
 import 'package:flutter/material.dart';
@@ -18,7 +19,7 @@ class PersonWidget extends StatefulWidget {
 class PersonWidgetState extends State<PersonWidget> {
   final _formKey = GlobalKey<FormState>();
   DateTime selectedDate = DateTime.now();
-  String templatePath;
+  DocumentTemplate _statementTemplate;
 
   final TextEditingController _firstNameController = new TextEditingController();
   final TextEditingController _lastNameController = new TextEditingController();
@@ -41,6 +42,8 @@ class PersonWidgetState extends State<PersonWidget> {
     selectedDate = p.getBirthday();
     _firstNameController.text = p.firstName;
     _lastNameController.text = p.lastName;
+    if (p.templateName != null && p.templateName.isNotEmpty) _statementTemplate = DocumentTemplate(p.templateName);
+
     setState(() {});
   }
 
@@ -54,6 +57,7 @@ class PersonWidgetState extends State<PersonWidget> {
           buildLastNameField(),
           buildFirstNameField(),
           buildBirthdayField(context),
+          buildImageField(),
           buildSaveButton(),
         ],
       ),
@@ -78,20 +82,20 @@ class PersonWidgetState extends State<PersonWidget> {
         child: Row(
           children: <Widget>[
             Text(message),
-            IconButton(icon: Icon(Icons.edit), onPressed: _navigateToImageTemplateViewer),
+            IconButton(icon: Icon(Icons.edit), onPressed: () => _selectDate(context)),
           ],
         ));
   }
 
-  Padding buildImageField(BuildContext context) {
-    var message = templatePath == null ? getLocalizedValue("StatementTemplateNotSet") : getLocalizedValue("StatementTemplateSet");
+  Padding buildImageField() {
+    var message = _statementTemplate == null ? getLocalizedValue("StatementTemplateNotSet") : getLocalizedValue("StatementTemplateSet");
 
     return Padding(
         padding: EdgeInsets.all(10.0),
         child: Row(
           children: <Widget>[
             Text(message),
-            IconButton(icon: templatePath == null ? Icon(Icons.camera_alt) : Icon(Icons.image), onPressed: () => _selectDate(context)),
+            IconButton(icon: _statementTemplate == null ? Icon(Icons.camera_alt) : Icon(Icons.image), onPressed: _navigateToImageTemplateViewer),
           ],
         ));
   }
@@ -102,7 +106,7 @@ class PersonWidgetState extends State<PersonWidget> {
       child: RaisedButton(
         onPressed: () {
           if (_formKey.currentState.validate()) {
-            var p = _createPerson(_firstNameController.text, _lastNameController.text, selectedDate);
+            var p = _createPerson(_firstNameController.text, _lastNameController.text, selectedDate, _statementTemplate);
             _navigateBack(p);
           }
         },
@@ -112,12 +116,16 @@ class PersonWidgetState extends State<PersonWidget> {
   }
 
   Future<void> _navigateToImageTemplateViewer() async {
-    var path = await _navigateToScaffold(StatementTemplateWidget(templatePath), getLocalizedValue('StatementTemplateWidgetTitle'));
-    if (path != null) templatePath = path;
+    var statementTemplate = await _navigateToScaffold(StatementTemplateWidget(_statementTemplate), getLocalizedValue('StatementTemplateWidgetTitle'));
+    if (statementTemplate != null) {
+      setState(() {
+        _statementTemplate = statementTemplate;
+      });
+    }
   }
 
-  Person _createPerson(String firstName, String lastName, DateTime birthday) {
-    return new Person(firstName, lastName, new Birthday(birthday));
+  Person _createPerson(String firstName, String lastName, DateTime birthday, DocumentTemplate statementTemplate) {
+    return new Person.withStatementTemplate(firstName, lastName, new Birthday(birthday), statementTemplate);
   }
 
   dynamic _navigateToScaffold(StatefulWidget widget, String title) async {
