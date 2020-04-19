@@ -43,25 +43,25 @@ class PageDescription {
 
   Map<String, DocumentText> _getDocumentElementsWithOnPaperCoordinates(BuildContext context) {
     return {
-      firstName: DocumentText(58, 54, _getLocalizedValue(context, 'firstName')),
-      lastName: DocumentText(120, 54, _getLocalizedValue(context, 'lastName')),
-      dayOfBirth: DocumentText(58, 63, '28'),
-      monthOfBirth: DocumentText(72, 63, '05'),
-      yearOfBirth: DocumentText(86, 63, '1968'),
-      addressLine1: DocumentText(58, 71, _getLocalizedValue(context, 'addressLine1')),
-      addressLine2: DocumentText(58, 79, _getLocalizedValue(context, 'addressLine2')),
-      destination: DocumentText(24, 106, _getLocalizedValue(context, 'destination')),
-      reasonOption1: DocumentText(32, 132, 'X'),
-      reasonOption2: DocumentText(32, 142, 'X'),
-      reasonOption3: DocumentText(32, 152, 'X'),
-      reasonOption4: DocumentText(32, 161, 'X'),
-      reasonOption5: DocumentText(32, 171, 'X'),
-      reasonOption6: DocumentText(32, 181, 'X'),
-      agriculturalActivityDescription: DocumentText(38, 182, _getLocalizedValue(context, 'agriculturalActivityDescription')),
-      reasonOption7: DocumentText(32, 191, 'X'),
-      reasonOption8: DocumentText(32, 195, 'X'),
-      reasonOption9: DocumentText(32, 202, 'X'),
-      reasonOption10: DocumentText(32, 207, 'X')
+      firstName: DocumentText(58, 54, _getLocalizedValue(context, 'firstName'), 0),
+      lastName: DocumentText(120, 54, _getLocalizedValue(context, 'lastName'), 0),
+      dayOfBirth: DocumentText(58, 63, '28', 0),
+      monthOfBirth: DocumentText(72, 63, '05', 0),
+      yearOfBirth: DocumentText(86, 63, '1968', 0),
+      addressLine1: DocumentText(58, 71, _getLocalizedValue(context, 'addressLine1'), 0),
+      addressLine2: DocumentText(58, 79, _getLocalizedValue(context, 'addressLine2'), 0),
+      destination: DocumentText(24, 106, _getLocalizedValue(context, 'destination'), 0),
+      reasonOption1: DocumentText(32, 132, 'X', 0),
+      reasonOption2: DocumentText(32, 142, 'X', 0),
+      reasonOption3: DocumentText(32, 152, 'X', 0),
+      reasonOption4: DocumentText(32, 161, 'X', 0),
+      reasonOption5: DocumentText(32, 171, 'X', 0),
+      reasonOption6: DocumentText(32, 181, 'X', 0),
+      agriculturalActivityDescription: DocumentText(38, 182, _getLocalizedValue(context, 'agriculturalActivityDescription'), 0),
+      reasonOption7: DocumentText(32, 191, 'X', 0),
+      reasonOption8: DocumentText(32, 195, 'X', 0),
+      reasonOption9: DocumentText(32, 202, 'X', 0),
+      reasonOption10: DocumentText(32, 207, 'X', 0)
     };
   }
 
@@ -80,6 +80,7 @@ class PageDescription {
     var yRatio = (pageBottomRightLocation.y - pageTopRightLocation.y) / a4Height;
     txt.x = txt.xOnPaper * xRatio + pageTopLeftLocation.x;
     txt.y = txt.yOnPaper * yRatio + pageTopLeftLocation.y;
+    txt.rotationAngle = rotationAngle;
     return txt;
   }
 

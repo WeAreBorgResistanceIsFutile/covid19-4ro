@@ -64,10 +64,6 @@ class _CameraWidgetState extends State<CameraWidget> {
     widgets.add(buildRectangle(pageDescriptor.pageBottomLeftLocation.x, pageDescriptor.pageBottomLeftLocation.y - markerWidth, false, false, true, true, markerWidth));
     widgets.add(buildRectangle(pageDescriptor.pageBottomRightLocation.x - markerWidth, pageDescriptor.pageBottomRightLocation.y - markerWidth, false, true, true, false, markerWidth));
 
-    pageDescriptor.getPageElements(context).forEach((e) {
-      widgets.add(buildText(e.x, e.y, e.text));
-    });
-
     widgets.add(buildLowerCommandStripe());
 
     return Container(

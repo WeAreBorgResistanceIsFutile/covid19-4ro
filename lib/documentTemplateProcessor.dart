@@ -49,33 +49,36 @@ class DocumentTemplateProcessor {
     HoughTransform ht = HoughTransform(imageShrinkedToPaperArea, thetaSubunitsPerDegree: 20, rhoSubunits: 1, luminanceThreashold: 200);
 
     var lines = ht.getLines();
-    var locations = lines.map((e) => getLineCoordinates(e, cropImageX, cropImageY, [0, 0, _image.width, _image.height])).toList();
-    if (locations.length == 4) {
-      final vline1 = locations[0];
-      final vline2 = locations[1];
-      final hline1 = locations[2];
-      final hline2 = locations[3];
+    if (lines.length == 4) {
+      var theta = lines[2].theta;
+      var locations = lines.map((e) => getLineCoordinates(e, cropImageX, cropImageY, [0, 0, _image.width, _image.height])).toList();
+      if (locations.length == 4) {
+        final vline1 = locations[0];
+        final vline2 = locations[1];
+        final hline1 = locations[2];
+        final hline2 = locations[3];
 
-      final Location pageTopLeftLocation = Location(vline1[0].x, hline1[0].y);
-      final Location pageTopRightLocation = Location(vline2[0].x, hline1[1].y);
-      final Location pageBottomLeftLocation = Location(vline1[1].x, hline2[0].y);
-      final Location pageBottomRightLocation = Location(vline2[1].x, hline2[1].y);
+        final Location pageTopLeftLocation = Location(vline1[0].x, hline1[0].y);
+        final Location pageTopRightLocation = Location(vline2[0].x, hline1[1].y);
+        final Location pageBottomLeftLocation = Location(vline1[1].x, hline2[0].y);
+        final Location pageBottomRightLocation = Location(vline2[1].x, hline2[1].y);
 
-      // img.drawCircle(_image, pageTopLeftLocation.x.toInt(), pageTopLeftLocation.y.toInt(), 10, img.getColor(250, 0, 0));
-      // img.drawCircle(_image, pageTopRightLocation.x.toInt(), pageTopRightLocation.y.toInt(), 10, img.getColor(250, 255, 0));
-      // img.drawCircle(_image, pageBottomLeftLocation.x.toInt(), pageBottomLeftLocation.y.toInt(), 10, img.getColor(250, 255, 255));
-      // img.drawCircle(_image, pageBottomRightLocation.x.toInt(), pageBottomRightLocation.y.toInt(), 10, img.getColor(0, 0, 0));
+        img.drawCircle(_image, pageTopLeftLocation.x.toInt(), pageTopLeftLocation.y.toInt(), 10, img.getColor(250, 0, 0));
+        img.drawCircle(_image, pageTopRightLocation.x.toInt(), pageTopRightLocation.y.toInt(), 10, img.getColor(250, 255, 0));
+        img.drawCircle(_image, pageBottomLeftLocation.x.toInt(), pageBottomLeftLocation.y.toInt(), 10, img.getColor(250, 255, 255));
+        img.drawCircle(_image, pageBottomRightLocation.x.toInt(), pageBottomRightLocation.y.toInt(), 10, img.getColor(0, 0, 0));
 
-      pageDescription = PageDescription(pageTopLeftLocation, pageTopRightLocation, pageBottomLeftLocation, pageBottomRightLocation, Size(resizedImage.width.toDouble(), resizedImage.height.toDouble()));
-      _pageDescription = (new TanslateCoordinates(pageDescription)).getPageDescription(resizedImage.width.toDouble(), resizedImage.height.toDouble());
+        pageDescription = PageDescription(pageTopLeftLocation, pageTopRightLocation, pageBottomLeftLocation, pageBottomRightLocation, Size(resizedImage.width.toDouble(), resizedImage.height.toDouble()), rotationAngle: theta);
+        _pageDescription = (new TanslateCoordinates(pageDescription)).getPageDescription(resizedImage.width.toDouble(), resizedImage.height.toDouble());
+      }
     }
 
-    // lines.forEach((e) {
-    //   drawLinesWithOffsett(_image, e, cropImageX, cropImageY);
-    // });
+    lines.forEach((e) {
+      drawLinesWithOffsett(_image, e, cropImageX, cropImageY);
+    });
 
-    // img.drawLine(_image, cropImageX, cropImageY, cropImageX + imageShrinkedToPaperArea.width, cropImageY, img.getColor(0, 255, 0));
-    // img.drawLine(_image, cropImageX, cropImageY + imageShrinkedToPaperArea.height, cropImageX + imageShrinkedToPaperArea.width, cropImageY + imageShrinkedToPaperArea.height, img.getColor(0, 255, 0));
+    img.drawLine(_image, cropImageX, cropImageY, cropImageX + imageShrinkedToPaperArea.width, cropImageY, img.getColor(0, 255, 0));
+    img.drawLine(_image, cropImageX, cropImageY + imageShrinkedToPaperArea.height, cropImageX + imageShrinkedToPaperArea.width, cropImageY + imageShrinkedToPaperArea.height, img.getColor(0, 255, 0));
 
     initializeData(resizedImage);
     _pageDescription = (new TanslateCoordinates(pageDescription)).getPageDescription(resizedImage.width.toDouble(), resizedImage.height.toDouble());
@@ -131,27 +134,13 @@ class DocumentTemplateProcessor {
     }
   }
 
-  img.Image decorateImageWithOrientatedText(double theta) {
-    if (_image != null) {
-      var image = _image.clone();
-      img.drawCircle(image, x, y, 10, 0xFFFFFFFF);
-
-      documentElements.forEach((key, value) {
-        _drawTextOnImage(image, value, theta);
-      });
-
-      return image;
-    }
-    return null;
-  }
-
   img.Image decorateImageWithText() {
     if (_image != null) {
       var image = _image.clone();
       img.drawCircle(image, x, y, 10, 0xFFFFFFFF);
 
       documentElements.forEach((key, value) {
-        _drawTextOnImage(image, value, 0);
+        _drawTextOnImage(image, value);
       });
 
       return image;
@@ -159,8 +148,9 @@ class DocumentTemplateProcessor {
     return null;
   }
 
-  void _drawTextOnImage(img.Image image, DocumentText c, double theta) {
-    drawString(image, arial_14, c.x.toInt(), c.y.toInt(), c.text, theta, color: c.color);
+  void _drawTextOnImage(img.Image image, DocumentText c) {
+    drawString(image, arial_14, c.x.toInt(), c.y.toInt(), c.text, c.rotationAngle, color: c.color);    
+    img.drawString(image, font, x, y, string)
   }
 
   void saveData() {

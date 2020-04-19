@@ -8,7 +8,7 @@ var _g_lut = Uint8List(256);
 var _b_lut = Uint8List(256);
 var _a_lut = Uint8List(256);
 
-Image drawString(Image image, BitmapFont font, int x, int y, String string, double theta, {int color = 0xffffffff}) {
+Image drawString(Image image, BitmapFont font, int originX, int originY, String string, double theta, {int color = 0xffffffff}) {
   if (color != 0xffffffff) {
     var ca = getAlpha(color);
     if (ca == 0) {
@@ -26,10 +26,14 @@ Image drawString(Image image, BitmapFont font, int x, int y, String string, doub
     }
   }
 
+  var x = originX;
+  var y = originY;
+  theta -= (pi / 2).toDouble();
+
   var chars = string.codeUnits;
   for (var c in chars) {
     if (!font.characters.containsKey(c)) {
-      x += font.base ~/ 2;
+      originX += font.base ~/ 2;
       continue;
     }
 
@@ -45,11 +49,10 @@ Image drawString(Image image, BitmapFont font, int x, int y, String string, doub
           p = getColor(_r_lut[getRed(p)], _g_lut[getGreen(p)], _b_lut[getBlue(p)], _a_lut[getAlpha(p)]);
         }
 
-        //https://en.wikipedia.org/wiki/Rotation_of_axes
-        var xt = (rotateX(xi, ch, theta, yi)).toInt();
-        var yt = (rotateY(xi, ch, theta, yi)).toInt();
+        var xt = originX + rotateX(xi + ch.xoffset - originX, yi + ch.yoffset - originY, theta);
+        var yt = originY + rotateY(xi + ch.xoffset - originX, yi + ch.yoffset - originY, theta);
 
-        drawPixel(image, xt, yt, p);
+        drawPixel(image, xt.toInt(), yt.toInt(), p);        
       }
     }
 
@@ -59,5 +62,6 @@ Image drawString(Image image, BitmapFont font, int x, int y, String string, doub
   return image;
 }
 
-double rotateY(int xi, BitmapFontCharacter ch, double theta, int yi) => -(xi + ch.xoffset) * sin(theta) + (yi + ch.yoffset) * cos(theta);
-double rotateX(int xi, BitmapFontCharacter ch, double theta, int yi) => (xi + ch.xoffset) * cos(theta) + (yi + ch.yoffset) * sin(theta);
+//https://en.wikipedia.org/wiki/Rotation_of_axes
+double rotateY(int x, int y, double theta) => -x * sin(theta) + y * cos(theta);
+double rotateX(int x, int y, double theta) => x * cos(theta) + y * sin(theta);

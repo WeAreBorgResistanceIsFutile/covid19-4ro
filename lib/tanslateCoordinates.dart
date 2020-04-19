@@ -17,6 +17,6 @@ class TanslateCoordinates {
     var pageBottomLeftLocation = new Location(_pageDescription.pageBottomLeftLocation.x * xRatio, _pageDescription.pageBottomLeftLocation.y * yRatio);
     var pageBottomRightLocation = new Location(_pageDescription.pageBottomRightLocation.x * xRatio, _pageDescription.pageBottomRightLocation.y * yRatio);
     var canvasSize = new Size(canvasWidth, canvasHeight);
-    return new PageDescription(pageTopLeftLocation, pageTopRightLocation, pageBottomLeftLocation, pageBottomRightLocation, canvasSize);
+    return new PageDescription(pageTopLeftLocation, pageTopRightLocation, pageBottomLeftLocation, pageBottomRightLocation, canvasSize, rotationAngle: _pageDescription.rotationAngle);
   }
 }
