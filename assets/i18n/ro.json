@@ -56,5 +56,6 @@
   "StatementTemplateSet": "Șablon de declarație",
   "CaptureStatementTemplateTitle": "Fotografiați declarația semnată",
   "StatementTemplateMissingWarning": "Generarea declarației pentru această persoană necesită o imagine a unei declarații pe propria răspundere COVID-19. Declarație trebuie să fie semnată dar necompletată! Datele vor fi salvate, dar o declarație nu poate fi generată.",
-  "NO_EXTERNAL_STORAGE_WRITE_PERMISSION" : "Generarea declarației nu poate fi continuată fără autorizare!"
+  "NO_EXTERNAL_STORAGE_WRITE_PERMISSION" : "Generarea declarației nu poate fi continuată fără autorizare!",
+  "Who_leaves_home" : "Cine pleacă de acasă?"
 }

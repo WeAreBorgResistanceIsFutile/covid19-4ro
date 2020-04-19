@@ -56,5 +56,6 @@
     "StatementTemplateSet": "Nyilatkozat sablon személyhez rendelve",
     "CaptureStatementTemplateTitle": "Sablon fotó készítése",
     "StatementTemplateMissingWarning": "A generáláshoz szükség van egy nem kitöltött, de aláírt nyilatkozat képére! A személy részére nem generálható nyilatkozat.",
-    "NO_EXTERNAL_STORAGE_WRITE_PERMISSION" : "Jogosultság hiányában nem folytatható a generálás!"
+    "NO_EXTERNAL_STORAGE_WRITE_PERMISSION" : "Jogosultság hiányában nem folytatható a generálás!",
+    "Who_leaves_home" : "Ki hagyja el az otthonát?"
 }

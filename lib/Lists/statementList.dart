@@ -1,8 +1,10 @@
 import 'package:covid19_4ro/Forms/addressForm.dart';
 import 'package:covid19_4ro/Forms/statementOnYourLiabilityForm.dart';
 import 'package:covid19_4ro/Lists/personList.dart';
+import 'package:covid19_4ro/Model/person.dart';
 
 import 'package:covid19_4ro/Model/statementOnYourLiability.dart';
+import 'package:covid19_4ro/MultiSelect/multiselect_formfield.dart';
 import 'package:covid19_4ro/Repository/addressRepository.dart';
 import 'package:covid19_4ro/Repository/personRepository.dart';
 import 'package:covid19_4ro/Repository/statementOnYourLiabilityRepository.dart';
@@ -19,6 +21,7 @@ class StatementListWidget extends StatefulWidget {
 class StatementListState extends State<StatementListWidget> {
   final List<StatementOnYourLiability> _statements = <StatementOnYourLiability>[];
   final TextStyle _biggerFont = const TextStyle(fontSize: 18);
+  final List<Person> _selectedPersons = List<Person>();
 
   @override
   void initState() {
@@ -109,10 +112,17 @@ class StatementListState extends State<StatementListWidget> {
       return;
     }
 
-    var statement = _statements.firstWhere((element) => element.key == key);
+    if(persons.length > 1)
+        await _showPersonSelector(getLocalizedValue('Who_leaves_home'), persons);
+    else
+      _selectedPersons.addAll(persons);
 
-    StatementGenerator sg = StatementGenerator(context, statement);
-    sg.generateStatements(persons, address);
+    if (_selectedPersons.length > 0) {
+      var statement = _statements.firstWhere((element) => element.key == key);
+
+      StatementGenerator sg = StatementGenerator(context, statement);
+      sg.generateStatements(_selectedPersons, address);
+    }
   }
 
   void _navigateToStatementCreator() {
@@ -189,6 +199,33 @@ class StatementListState extends State<StatementListWidget> {
     return result;
   }
 
+  Padding buildPersonSelector(List<Person> persons) {
+    _selectedPersons.clear();
+    return Padding(
+      padding: EdgeInsets.all(10.0),
+      child: MultiSelectFormField(
+        autovalidate: false,
+        dataSource: persons.map((e) => {'display': e.name, 'value': e}).toList(),
+        textField: 'display',
+        valueField: 'value',
+        okButtonLabel: getLocalizedValue('OK'),
+        cancelButtonLabel: getLocalizedValue('Cancel'),
+        value: _selectedPersons,
+        initialValue: persons.map((e) => {'display': e.name, 'value': e}).toList(),
+        // required: true,
+        hintText: getLocalizedValue('reasonHint'),
+        onSaved: (value) {
+          if (value == null) {
+            _selectedPersons.addAll(persons);
+          }
+          setState(() {
+            value.forEach((e) => _selectedPersons.add(e as Person));
+          });
+        },
+      ),
+    );
+  }
+
   Future<void> _showAlert(String title, String message) async {
     return showDialog<void>(
       context: context,
@@ -204,6 +241,40 @@ class StatementListState extends State<StatementListWidget> {
             ),
           ),
           actions: <Widget>[
+            FlatButton(
+              child: getLocalizedText('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _showPersonSelector(String title, List<Person> persons) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                buildPersonSelector(persons),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            FlatButton(
+              child: getLocalizedText('Cancel'),
+              onPressed: () {
+                _selectedPersons.clear();
+                Navigator.of(context).pop();
+              },
+            ),
             FlatButton(
               child: getLocalizedText('OK'),
               onPressed: () {
