@@ -19,7 +19,7 @@ samples, guidance on mobile development, and a full API reference.
 
 
 ## Steps to generate and load a new font:
-- Go to http://kkvazars.com/littera
+- Go to http://kvazars.com/littera
 - Configure it for the font and characters you would like
 - Use the "XML (.fnt)" export format
 - Press Export and download the generated zip file.

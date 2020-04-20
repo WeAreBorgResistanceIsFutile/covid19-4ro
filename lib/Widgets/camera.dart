@@ -63,7 +63,7 @@ class _CameraWidgetState extends State<CameraWidget> {
     widgets.add(buildRectangle(pageDescriptor.pageTopRightLocation.x - markerWidth, pageDescriptor.pageTopRightLocation.y, true, true, false, false, markerWidth));
     widgets.add(buildRectangle(pageDescriptor.pageBottomLeftLocation.x, pageDescriptor.pageBottomLeftLocation.y - markerWidth, false, false, true, true, markerWidth));
     widgets.add(buildRectangle(pageDescriptor.pageBottomRightLocation.x - markerWidth, pageDescriptor.pageBottomRightLocation.y - markerWidth, false, true, true, false, markerWidth));
-
+    
     widgets.add(buildLowerCommandStripe());
 
     return Container(
@@ -145,6 +145,19 @@ class _CameraWidgetState extends State<CameraWidget> {
     );
   }
 
+  Positioned buildFullRectangle(double x, double y, double width, double height) {
+    return Positioned(
+      left: x,
+      top: y,
+      width: width,
+      child: Container(
+        width: width,
+        height: height,
+        decoration: BoxDecoration(border: Border(left: buildBorderSide(true), right: buildBorderSide(true), top: buildBorderSide(true), bottom: buildBorderSide(true))),
+      ),
+    );
+  }
+
   BorderSide buildBorderSide(bool isGreen) => BorderSide(width: 2, color: isGreen ? Colors.greenAccent : Colors.transparent);
 
   void toggleCamera() {
@@ -189,13 +202,12 @@ class _CameraWidgetState extends State<CameraWidget> {
     controller = CameraController(cameraDescription, ResolutionPreset.max);
 
     controller.addListener(() {
-      if (mounted) setState(() {});      
+      if (mounted) setState(() {});
     });
 
     try {
       await controller.initialize();
-    } on CameraException {
-    }
+    } on CameraException {}
 
     if (mounted) setState(() {});
   }
@@ -220,7 +232,7 @@ class _CameraWidgetState extends State<CameraWidget> {
   }
 
   Future<String> takePicture() async {
-    if (!controller.value.isInitialized) {      
+    if (!controller.value.isInitialized) {
       return null;
     }
     final Directory extDir = await getTemporaryDirectory();
@@ -241,7 +253,6 @@ class _CameraWidgetState extends State<CameraWidget> {
     return filePath;
   }
 
-
   void logError(String code, String message) => print('Error: $code\nMessage: $message');
 
   PageDescription buildScreenPageDescriptor() {
@@ -252,7 +263,7 @@ class _CameraWidgetState extends State<CameraWidget> {
     double previewImageWidht = mediaQueryResult.size.width * ratio;
 
     double offsetX = (mediaQueryResult.size.width - previewImageWidht) / 2;
-    
+
     double xPercentage = 0.13;
     double yPercentage = 0.05;
     double x1 = previewImageWidht * xPercentage + offsetX;
@@ -286,7 +297,7 @@ class _CameraWidgetState extends State<CameraWidget> {
     double previewImageWidht = mediaQueryResult.size.width * ratio;
 
     double offsetX = (mediaQueryResult.size.width - previewImageWidht) / 2;
-    
+
     double xPercentage = 0.13;
     double yPercentage = 0.05;
     double x1 = previewImageWidht * xPercentage + offsetX + (mediaQueryResult.size.width - previewImageWidht).abs() / 2;

@@ -6,11 +6,13 @@
 // tree, read text, and verify that the values of widget properties are correct.
 
 
+import 'package:covid19_4ro/fontLoader.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   testWidgets('Matrix modification', (WidgetTester tester) async {
-    
+    var str = await CreateFontDart.create('verdana', 14);
+    print(str);
   });
 
 }

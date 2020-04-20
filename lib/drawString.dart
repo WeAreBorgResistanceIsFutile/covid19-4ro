@@ -28,7 +28,7 @@ Image drawString(Image image, BitmapFont font, int originX, int originY, String 
 
   var x = originX;
   var y = originY;
-  theta -= (pi / 2).toDouble();
+  theta = (pi / 2 - theta);  
 
   var chars = string.codeUnits;
   for (var c in chars) {
@@ -52,7 +52,7 @@ Image drawString(Image image, BitmapFont font, int originX, int originY, String 
         var xt = originX + rotateX(xi + ch.xoffset - originX, yi + ch.yoffset - originY, theta);
         var yt = originY + rotateY(xi + ch.xoffset - originX, yi + ch.yoffset - originY, theta);
 
-        drawPixel(image, xt.toInt(), yt.toInt(), p);        
+        drawPixel(image, xt.toInt(), yt.toInt(), p);
       }
     }
 

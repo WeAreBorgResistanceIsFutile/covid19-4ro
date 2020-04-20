@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:math';
 
+import 'package:covid19_4ro/Fonts/verdana14.dart';
 import 'package:flutter/material.dart';
 
 import 'package:image/image.dart' as img;

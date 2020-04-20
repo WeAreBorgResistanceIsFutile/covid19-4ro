@@ -25,8 +25,8 @@ class DocumentTemplate {
 
   get x => _x ?? 0;
   get y => _y ?? 0;
-  set x(value) => x = value;
-  set y(value) => y = value;
+  set x(value) => _x = value;
+  set y(value) => _y = value;
 
   DocumentTemplate();
 

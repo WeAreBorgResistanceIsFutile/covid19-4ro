@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:covid19_4ro/Model/location.dart';
 import 'package:flutter/material.dart';
 
@@ -43,25 +45,25 @@ class PageDescription {
   Map<String, DocumentText> _getDocumentElementsWithOnPaperCoordinates() {
     return {
       firstName: DocumentText(58, 54, "Lorem ipsum", 0),
-      lastName: DocumentText(120, 54, "dolor sit amet", 0),
+      lastName: DocumentText(117, 54, "dolor sit amet", 0),
       dayOfBirth: DocumentText(58, 63, '28', 0),
       monthOfBirth: DocumentText(72, 63, '05', 0),
       yearOfBirth: DocumentText(86, 63, '1968', 0),
       addressLine1: DocumentText(58, 71, "consectetur adipiscing elit", 0),
       addressLine2: DocumentText(58, 79, "sed do eiusmod tempor incididunt", 0),
-      destination: DocumentText(24, 106, "ut labore et dolore magna aliqua", 0),
-      reasonOption1: DocumentText(32, 132, 'X', 0),
-      reasonOption2: DocumentText(32, 142, 'X', 0),
-      reasonOption3: DocumentText(32, 152, 'X', 0),
-      reasonOption4: DocumentText(32, 161, 'X', 0),
-      reasonOption5: DocumentText(32, 171, 'X', 0),
-      reasonOption6: DocumentText(32, 181, 'X', 0),
-      agriculturalActivityDescription: DocumentText(38, 182, "Ut enim ad minim veniam, quis nostrud exercitation", 0),
-      reasonOption7: DocumentText(32, 191, 'X', 0),
-      reasonOption8: DocumentText(32, 195, 'X', 0),
-      reasonOption9: DocumentText(32, 202, 'X', 0),
-      reasonOption10: DocumentText(32, 207, 'X', 0),
-      date: DocumentText(56, 234, '28/04/2020', 0)
+      destination: DocumentText(24, 104, "ut labore et dolore magna aliqua", 0),
+      reasonOption1: DocumentText(32, 130, 'X', 0),
+      reasonOption2: DocumentText(32, 140, 'X', 0),
+      reasonOption3: DocumentText(32, 150, 'X', 0),
+      reasonOption4: DocumentText(32, 156, 'X', 0),
+      reasonOption5: DocumentText(32, 166, 'X', 0),
+      reasonOption6: DocumentText(32, 177, 'X', 0),
+      agriculturalActivityDescription: DocumentText(38, 180, "Ut enim ad minim veniam, quis nostrud exercitation", 0),
+      reasonOption7: DocumentText(32, 188, 'X', 0),
+      reasonOption8: DocumentText(32, 194, 'X', 0),
+      reasonOption9: DocumentText(32, 199, 'X', 0),
+      reasonOption10: DocumentText(32, 203, 'X', 0),
+      date: DocumentText(56, 230, '28/04/2020', 0)
     };
   }
 
@@ -78,9 +80,15 @@ class PageDescription {
   DocumentText _calculateCoordinates(DocumentText txt) {
     var xRatio = (pageTopRightLocation.x - pageTopLeftLocation.x) / a4Width;
     var yRatio = (pageBottomRightLocation.y - pageTopRightLocation.y) / a4Height;
-    txt.x = txt.xOnPaper * xRatio + pageTopLeftLocation.x;
-    txt.y = txt.yOnPaper * yRatio + pageTopLeftLocation.y;
+    var x = txt.xOnPaper * xRatio + pageTopLeftLocation.x;
+    var y = txt.yOnPaper * yRatio + pageTopLeftLocation.y;
+    txt.x = rotateX(x, y, pi/2 - rotationAngle);
+    txt.y = rotateY(x, y, pi/2 - rotationAngle);
     txt.rotationAngle = rotationAngle;
     return txt;
   }
+
+  //https://en.wikipedia.org/wiki/Rotation_of_axes
+  double rotateY(double x, double y, double theta) => -x * sin(theta) + y * cos(theta);
+  double rotateX(double x, double y, double theta) => x * cos(theta) + y * sin(theta);
 }
