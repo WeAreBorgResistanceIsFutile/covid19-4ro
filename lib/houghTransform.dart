@@ -19,10 +19,11 @@ class HoughTransform {
 
   HoughTransform(this._image, {this.rhoSubunits = 1, this.thetaSubunitsPerDegree = 10, this.luminanceThreashold = 150});
 
-  final int processedImageWidth = 640;
+  final int processedImageWidth = 480;
 
   List<ThetaRho> getPageBoundaryLines() {
     final imageShrinkedToPaperArea = copyResize(_image, width: processedImageWidth);
+
     var sobleImage = sobel(imageShrinkedToPaperArea);
 
     var matrix = calculateHoughMatrix(sobleImage);
@@ -49,6 +50,7 @@ class HoughTransform {
 
   List<ThetaRho> getAllLines() {
     final imageShrinkedToPaperArea = copyResize(_image, width: processedImageWidth);
+    
     var sobleImage = sobel(imageShrinkedToPaperArea);
 
     var matrix = calculateHoughMatrix(sobleImage);
@@ -66,7 +68,7 @@ class HoughTransform {
 
     var matrix = calculateHoughMatrix(sobleImage);
     matrix = getMatrixWithLocalMaxima(matrix, 10);
-    // matrix = getMatrixWithLocalMaxima(matrix, 50);
+    matrix = getMatrixWithLocalMaxima(matrix, 50);
     matrix = nomalizeMatrix(matrix);
 
     return createImageFromHoughMatrix(matrix);
@@ -88,7 +90,7 @@ class HoughTransform {
 
   List<ThetaRho> _getHighestThetaRho(List<List<int>> matrix, int threshold) {
     var retVar = List<ThetaRho>();
-    
+
     for (var theta = 0; theta < matrix.length; theta++) {
       for (var rho = 0; rho < matrix[0].length; rho++) {
         if (matrix[theta][rho] > threshold) retVar.add(new ThetaRho(_degreeIndex[theta], (rho - _houghMatrixRoAxisMax ~/ 2) ~/ rhoSubunits));
@@ -120,9 +122,17 @@ class HoughTransform {
   List<List<int>> getMatrixWithLocalMaxima(List<List<int>> matrix, int range) {
     List<List<int>> retVar = createMatrix<int>(matrix.length, matrix[0].length, () => 0);
 
+    var lastLocalMaximaX = 0;
+    var lastLocalMaximaY = 0;
     for (var x = 0; x < matrix.length; x++) {
       for (var y = 0; y < matrix[0].length; y++) {
-        if (matrix[x][y] > 0 && isLocalMaxima(matrix, x, y, range)) retVar[x][y] = matrix[x][y];
+        if (matrix[x][y] > 0 &&
+            !(x - range <= lastLocalMaximaX && y - range <= lastLocalMaximaY && x + range >= lastLocalMaximaX && y + range >= lastLocalMaximaY && matrix[x][y] < retVar[lastLocalMaximaX][lastLocalMaximaY]) &&
+            isLocalMaxima(matrix, x, y, range)) {
+          retVar[x][y] = matrix[x][y];
+          lastLocalMaximaX = x;
+          lastLocalMaximaY = y;
+        }
       }
     }
     return retVar;
@@ -195,33 +205,28 @@ class HoughTransform {
     double verticalThreshold = 0.01;
     double horizontalThreshold = 0.001;
     for (double d = -pi; d < pi; d += angleUnit) {
-      if (sin(d).abs() < verticalThreshold)
-      {
+      if (sin(d).abs() < verticalThreshold) {
         retVar.putIfAbsent(i++, () => d);
-      }
-      else if ((1 - sin(d).abs()).abs() < horizontalThreshold) 
-      {
+      } else if ((1 - sin(d).abs()).abs() < horizontalThreshold) {
         retVar.putIfAbsent(i++, () => d);
       }
     }
     return retVar;
   }
 
-  HashMap<int, double> _createCosTheta( HashMap<int, double> degreeIndex) {
+  HashMap<int, double> _createCosTheta(HashMap<int, double> degreeIndex) {
     var retVar = HashMap<int, double>();
-    for(int i=0; i < degreeIndex.keys.length; i++)
-    {
-        retVar.putIfAbsent(i, () => cos(degreeIndex[i]));
-    }    
+    for (int i = 0; i < degreeIndex.keys.length; i++) {
+      retVar.putIfAbsent(i, () => cos(degreeIndex[i]));
+    }
     return retVar;
   }
 
-  HashMap<int, double> _createSinTheta( HashMap<int, double> degreeIndex) {
+  HashMap<int, double> _createSinTheta(HashMap<int, double> degreeIndex) {
     var retVar = HashMap<int, double>();
-    for(int i=0; i < degreeIndex.keys.length; i++)
-    {
-        retVar.putIfAbsent(i, () => sin(degreeIndex[i]));
-    }    
+    for (int i = 0; i < degreeIndex.keys.length; i++) {
+      retVar.putIfAbsent(i, () => sin(degreeIndex[i]));
+    }
     return retVar;
   }
 

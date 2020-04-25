@@ -58,7 +58,7 @@ void main() {
       expect(a[19].rho, -476);
       expect(a[19].theta, 3.1415926535895293);
       expect(a[20].rho, -162);
-      expect(a[20].theta, 3.1415926535895293);      
+      expect(a[20].theta, 3.1415926535895293);
     });
     test("HoughTransform.getPageBoundaryLines", () async {
       Image img = await getImage('test_image');
@@ -70,7 +70,7 @@ void main() {
 
       print("HoughTransform.getPageBoundaryLines:  ${DateTime.now().difference(t).inMicroseconds}");
 
-      expect(a.length, equals(4));
+      expect(a.length, equals(4), reason: "A page has 4 sides");
       expect(a[0].rho, equals(709));
       expect(a[0].theta, 0.008726646259839814);
       expect(a[1].rho, 2034);
@@ -79,7 +79,6 @@ void main() {
       expect(a[2].theta, 1.574286985298719);
       expect(a[3].rho, 3231);
       expect(a[3].theta, 1.6057029118346149);
-      
     });
     test("HoughTransform.getAllLines  less theta subunits", () async {
       Image img = await getImage('test_image');
@@ -138,7 +137,6 @@ void main() {
       expect(a[21].theta, 3.1415926535897722);
       expect(a[22].rho, -162);
       expect(a[22].theta, 3.1415926535897722);
-      
     });
     test("HoughTransform.getPageBoundaryLines less theta subunits", () async {
       Image img = await getImage('test_image');
@@ -150,7 +148,7 @@ void main() {
 
       print("HoughTransform.getPageBoundaryLines less theta subunits:  ${DateTime.now().difference(t).inMicroseconds}");
 
-      expect(a.length, equals(4));
+      expect(a.length, equals(4), reason: "A page has 4 sides");
       expect(a[0].rho, 692);
       expect(a[0].theta, -1.0401401961956935e-14);
       expect(a[1].rho, 2034);
@@ -158,35 +156,7 @@ void main() {
       expect(a[2].rho, 1000);
       expect(a[2].theta, 1.570796326794888);
       expect(a[3].rho, 3231);
-      expect(a[3].theta, 1.6057029118347745);      
-    });
-  
-
-    // var xStart = xCenter - range > 0 ? xCenter - range : 0;
-    // var yStart = yCenter - range > 0 ? yCenter - range : 0;
-    // var xEnd = xCenter + range <= matrix.length ? xCenter + range : matrix.length;
-    // var yEnd = yCenter + range <= matrix[0].length ? yCenter + range : matrix[0].length;
-
-
-    test("HoughTransform.getPageBoundaryLines", () async {
-      Image img = await getImage('test_image');
-
-      DateTime t = DateTime.now();
-      HoughTransform ht = HoughTransform(img, thetaSubunitsPerDegree: 1);
-
-      var a = ht.getPageBoundaryLines();
-
-      print("HoughTransform.getPageBoundaryLines:  ${DateTime.now().difference(t).inMicroseconds}");
-
-      expect(a.length, equals(4));
-      expect(a[0].rho, 692);
-      expect(a[0].theta, -1.0401401961956935e-14);
-      expect(a[1].rho, 2034);
-      expect(a[1].theta, -1.0401401961956935e-14);
-      expect(a[2].rho, 1000);
-      expect(a[2].theta, 1.570796326794888);
-      expect(a[3].rho, 3231);
-      expect(a[3].theta, 1.6057029118347745);      
+      expect(a[3].theta, 1.6057029118347745);
     });
   });
 }
