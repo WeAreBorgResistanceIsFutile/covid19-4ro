@@ -40,7 +40,7 @@ class HoughTransform {
     verticalLines.sort((a, b) => a.rho.compareTo(b.rho));
     if (horizontalLines.length >= 2 && verticalLines.length >= 2)
       return [horizontalLines.first, horizontalLines.last, verticalLines.first, verticalLines.last];
-    else{
+    else {
       horizontalLines.addAll(verticalLines);
       return horizontalLines;
     }
@@ -132,12 +132,15 @@ class HoughTransform {
   }
 
   bool isLocalMaxima(List<List<int>> matrix, int xCenter, int yCenter, int range) {
-    for (var x = xCenter - range; x <= xCenter + range; x++) {
-      for (var y = yCenter - range; y < yCenter + range; y++) {
-        if (!(x < 0 || x >= matrix.length || y < 0 || y >= matrix[0].length)) {
-          if (matrix[x][y] > matrix[xCenter][yCenter]) {
-            return false;
-          }
+    var xStart = xCenter - range >= 0 ? xCenter - range : 0;
+    var yStart = yCenter - range >= 0 ? yCenter - range : 0;
+    var xEnd = xCenter + range < matrix.length ? xCenter + range : matrix.length;
+    var yEnd = yCenter + range < matrix[0].length ? yCenter + range : matrix[0].length;
+
+    for (var x = xStart; x < xEnd; x++) {
+      for (var y = yStart; y < yEnd; y++) {
+        if (matrix[x][y] > matrix[xCenter][yCenter]) {
+          return false;
         }
       }
     }

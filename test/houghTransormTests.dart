@@ -13,6 +13,9 @@ void main() {
       HoughTransform ht = HoughTransform(img);
 
       var a = ht.getAllLines();
+
+      print("HoughTransform.getAllLines:  ${DateTime.now().difference(t).inMicroseconds}");
+
       expect(a.length, equals(21));
       expect(a[0].rho, -477);
       expect(a[0].theta, -3.141592653589793);
@@ -55,8 +58,7 @@ void main() {
       expect(a[19].rho, -476);
       expect(a[19].theta, 3.1415926535895293);
       expect(a[20].rho, -162);
-      expect(a[20].theta, 3.1415926535895293);
-      print("HoughTransform.getAllLines:  ${DateTime.now().difference(t).inMicroseconds}");
+      expect(a[20].theta, 3.1415926535895293);      
     });
     test("HoughTransform.getPageBoundaryLines", () async {
       Image img = await getImage('test_image');
@@ -65,6 +67,9 @@ void main() {
       HoughTransform ht = HoughTransform(img);
 
       var a = ht.getPageBoundaryLines();
+
+      print("HoughTransform.getPageBoundaryLines:  ${DateTime.now().difference(t).inMicroseconds}");
+
       expect(a.length, equals(4));
       expect(a[0].rho, equals(709));
       expect(a[0].theta, 0.008726646259839814);
@@ -74,7 +79,7 @@ void main() {
       expect(a[2].theta, 1.574286985298719);
       expect(a[3].rho, 3231);
       expect(a[3].theta, 1.6057029118346149);
-      print("HoughTransform.getPageBoundaryLines:  ${DateTime.now().difference(t).inMicroseconds}");
+      
     });
     test("HoughTransform.getAllLines  less theta subunits", () async {
       Image img = await getImage('test_image');
@@ -83,6 +88,9 @@ void main() {
       HoughTransform ht = HoughTransform(img, thetaSubunitsPerDegree: 1);
 
       var a = ht.getAllLines();
+
+      print("HoughTransform.getAllLines  less theta subunits:  ${DateTime.now().difference(t).inMicroseconds}");
+
       expect(a.length, equals(23));
       expect(a[0].rho, -477);
       expect(a[0].theta, -3.141592653589793);
@@ -130,7 +138,7 @@ void main() {
       expect(a[21].theta, 3.1415926535897722);
       expect(a[22].rho, -162);
       expect(a[22].theta, 3.1415926535897722);
-      print("HoughTransform.getAllLines  less theta subunits:  ${DateTime.now().difference(t).inMicroseconds}");
+      
     });
     test("HoughTransform.getPageBoundaryLines less theta subunits", () async {
       Image img = await getImage('test_image');
@@ -139,6 +147,9 @@ void main() {
       HoughTransform ht = HoughTransform(img, thetaSubunitsPerDegree: 1);
 
       var a = ht.getPageBoundaryLines();
+
+      print("HoughTransform.getPageBoundaryLines less theta subunits:  ${DateTime.now().difference(t).inMicroseconds}");
+
       expect(a.length, equals(4));
       expect(a[0].rho, 692);
       expect(a[0].theta, -1.0401401961956935e-14);
@@ -147,8 +158,7 @@ void main() {
       expect(a[2].rho, 1000);
       expect(a[2].theta, 1.570796326794888);
       expect(a[3].rho, 3231);
-      expect(a[3].theta, 1.6057029118347745);
-      print("HoughTransform.getPageBoundaryLines less theta subunits:  ${DateTime.now().difference(t).inMicroseconds}");
+      expect(a[3].theta, 1.6057029118347745);      
     });
   
 
@@ -165,6 +175,9 @@ void main() {
       HoughTransform ht = HoughTransform(img, thetaSubunitsPerDegree: 1);
 
       var a = ht.getPageBoundaryLines();
+
+      print("HoughTransform.getPageBoundaryLines:  ${DateTime.now().difference(t).inMicroseconds}");
+
       expect(a.length, equals(4));
       expect(a[0].rho, 692);
       expect(a[0].theta, -1.0401401961956935e-14);
@@ -173,8 +186,7 @@ void main() {
       expect(a[2].rho, 1000);
       expect(a[2].theta, 1.570796326794888);
       expect(a[3].rho, 3231);
-      expect(a[3].theta, 1.6057029118347745);
-      print("HoughTransform.getPageBoundaryLines:  ${DateTime.now().difference(t).inMicroseconds}");
+      expect(a[3].theta, 1.6057029118347745);      
     });
   });
 }
