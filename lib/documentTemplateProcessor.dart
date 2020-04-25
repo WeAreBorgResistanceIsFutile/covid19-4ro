@@ -41,7 +41,7 @@ class DocumentTemplateProcessor {
 
     HoughTransform ht = HoughTransform(imageShrinkedToPaperArea, thetaSubunitsPerDegree: 20, rhoSubunits: 1, luminanceThreashold: 200);
 
-    var lines = ht.getLines();
+    var lines = ht.getPageBoundaryLines();
     if (lines.length == 4) {
       var theta = lines[2].theta;
       var locations = lines.map((e) => getLineCoordinates(e, cropImageX, cropImageY, [0, 0, _image.width, _image.height])).toList();

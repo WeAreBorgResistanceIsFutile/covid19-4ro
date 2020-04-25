@@ -19,7 +19,7 @@ class HoughTransform {
 
   final int processedImageWidth = 640;
 
-  List<ThetaRho> getLines() {
+  List<ThetaRho> getPageBoundaryLines() {
     final imageShrinkedToPaperArea = copyResize(_image, width: processedImageWidth);
     var sobleImage = sobel(imageShrinkedToPaperArea);
 
@@ -44,6 +44,20 @@ class HoughTransform {
       horizontalLines.addAll(verticalLines);
       return horizontalLines;
     }
+  }
+
+  List<ThetaRho> getAllLines() {
+    final imageShrinkedToPaperArea = copyResize(_image, width: processedImageWidth);
+    var sobleImage = sobel(imageShrinkedToPaperArea);
+
+    var binaryMatrix = calculateBinaryMatrix(sobleImage);
+    var matrix = calculateHoughMatrix(binaryMatrix);
+    matrix = getMatrixWithLocalMaxima(matrix, 10);
+    matrix = getMatrixWithLocalMaxima(matrix, 50);
+    matrix = nomalizeMatrix(matrix);
+
+    var lines = _getHighestThetaRho(matrix, 20);
+    return lines;
   }
 
   Image getHoughSpaceImage() {
