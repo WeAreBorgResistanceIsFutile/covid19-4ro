@@ -14,6 +14,8 @@ class HoughTransform {
   int _houghMatrixThetaAxisMax;
 
   HashMap<int, double> _degreeIndex;
+  HashMap<int, double> _cosTheta;
+  HashMap<int, double> _sinTheta;
 
   HoughTransform(this._image, {this.rhoSubunits = 1, this.thetaSubunitsPerDegree = 10, this.luminanceThreashold = 150});
 
@@ -23,8 +25,7 @@ class HoughTransform {
     final imageShrinkedToPaperArea = copyResize(_image, width: processedImageWidth);
     var sobleImage = sobel(imageShrinkedToPaperArea);
 
-    var binaryMatrix = calculateBinaryMatrix(sobleImage);
-    var matrix = calculateHoughMatrix(binaryMatrix);
+    var matrix = calculateHoughMatrix(sobleImage);
     matrix = getMatrixWithLocalMaxima(matrix, 10);
     matrix = getMatrixWithLocalMaxima(matrix, 50);
     matrix = nomalizeMatrix(matrix);
@@ -50,8 +51,7 @@ class HoughTransform {
     final imageShrinkedToPaperArea = copyResize(_image, width: processedImageWidth);
     var sobleImage = sobel(imageShrinkedToPaperArea);
 
-    var binaryMatrix = calculateBinaryMatrix(sobleImage);
-    var matrix = calculateHoughMatrix(binaryMatrix);
+    var matrix = calculateHoughMatrix(sobleImage);
     matrix = getMatrixWithLocalMaxima(matrix, 10);
     matrix = getMatrixWithLocalMaxima(matrix, 50);
     matrix = nomalizeMatrix(matrix);
@@ -64,8 +64,7 @@ class HoughTransform {
     final imageShrinkedToPaperArea = copyResize(_image, width: processedImageWidth);
     var sobleImage = sobel(imageShrinkedToPaperArea);
 
-    var binaryMatrix = calculateBinaryMatrix(sobleImage);
-    var matrix = calculateHoughMatrix(binaryMatrix);
+    var matrix = calculateHoughMatrix(sobleImage);
     matrix = getMatrixWithLocalMaxima(matrix, 10);
     // matrix = getMatrixWithLocalMaxima(matrix, 50);
     matrix = nomalizeMatrix(matrix);
@@ -89,9 +88,7 @@ class HoughTransform {
 
   List<ThetaRho> _getHighestThetaRho(List<List<int>> matrix, int threshold) {
     var retVar = List<ThetaRho>();
-
-    double angleUnit = pi / (180 * thetaSubunitsPerDegree);
-    _degreeIndex = _createDegreeIndex(angleUnit);
+    
     for (var theta = 0; theta < matrix.length; theta++) {
       for (var rho = 0; rho < matrix[0].length; rho++) {
         if (matrix[theta][rho] > threshold) retVar.add(new ThetaRho(_degreeIndex[theta], (rho - _houghMatrixRoAxisMax ~/ 2) ~/ rhoSubunits));
@@ -102,7 +99,7 @@ class HoughTransform {
   }
 
   List<List<int>> nomalizeMatrix(List<List<int>> matrix) {
-    int max = 0;
+    int max = 1;
     List<List<int>> retVar = createMatrix<int>(matrix.length, matrix[0].length, () => 0);
 
     for (var x = 0; x < matrix.length; x++) {
@@ -166,23 +163,24 @@ class HoughTransform {
     return retVar;
   }
 
-  List<List<int>> calculateHoughMatrix(List<List<bool>> binaryMatrix) {
+  List<List<int>> calculateHoughMatrix(Image image) {
     double angleUnit = pi / (180 * thetaSubunitsPerDegree);
 
     _degreeIndex = _createDegreeIndex(angleUnit);
+    _sinTheta = _createSinTheta(_degreeIndex);
+    _cosTheta = _createCosTheta(_degreeIndex);
 
-    _houghMatrixRoAxisMax = _calculateImageDiagonal(binaryMatrix.length, binaryMatrix[0].length) * rhoSubunits * 2;
+    _houghMatrixRoAxisMax = _calculateImageDiagonal(image.width, image.height) * rhoSubunits * 2;
     _houghMatrixThetaAxisMax = _degreeIndex.length;
 
     var houghMatrix = createMatrix<int>(_houghMatrixThetaAxisMax, _houghMatrixRoAxisMax, () => 0);
 
-    for (var x = 0; x < binaryMatrix.length; x++) {
-      for (var y = 0; y < binaryMatrix[0].length; y++) {
-        if (binaryMatrix[x][y]) {
-          var line = calculateRo(x, y);
-          for (int i = 0; i < line.length; i++) {
-            int ro = (line[i]).toInt();
-            houghMatrix[i][ro * rhoSubunits + _houghMatrixRoAxisMax ~/ 2]++;
+    for (var x = 0; x < image.width; x++) {
+      for (var y = 0; y < image.height; y++) {
+        if (getLuminance(image.getPixel(x, y)) > luminanceThreashold) {
+          for (int i = 0; i < _degreeIndex.length; i++) {
+            var value = x * _cosTheta[i] + y * _sinTheta[i];
+            houghMatrix[i][(value * rhoSubunits).toInt() + _houghMatrixRoAxisMax ~/ 2]++;
           }
         }
       }
@@ -198,19 +196,32 @@ class HoughTransform {
     double horizontalThreshold = 0.001;
     for (double d = -pi; d < pi; d += angleUnit) {
       if (sin(d).abs() < verticalThreshold)
+      {
         retVar.putIfAbsent(i++, () => d);
-      else if ((1 - sin(d).abs()).abs() < horizontalThreshold) retVar.putIfAbsent(i++, () => d);
+      }
+      else if ((1 - sin(d).abs()).abs() < horizontalThreshold) 
+      {
+        retVar.putIfAbsent(i++, () => d);
+      }
     }
     return retVar;
   }
 
-  List<double> calculateRo(int x, int y) {
-    var retVar = List<double>.filled(_houghMatrixThetaAxisMax, 0.0);
-    for (int i = 0; i < retVar.length; i++) {
-      double theta = _degreeIndex[i];
-      var value = x * cos(theta) + y * sin(theta);
-      retVar[i] = value;
-    }
+  HashMap<int, double> _createCosTheta( HashMap<int, double> degreeIndex) {
+    var retVar = HashMap<int, double>();
+    for(int i=0; i < degreeIndex.keys.length; i++)
+    {
+        retVar.putIfAbsent(i, () => cos(degreeIndex[i]));
+    }    
+    return retVar;
+  }
+
+  HashMap<int, double> _createSinTheta( HashMap<int, double> degreeIndex) {
+    var retVar = HashMap<int, double>();
+    for(int i=0; i < degreeIndex.keys.length; i++)
+    {
+        retVar.putIfAbsent(i, () => sin(degreeIndex[i]));
+    }    
     return retVar;
   }
 
