@@ -19,7 +19,7 @@ class HoughTransform {
 
   HoughTransform(this._image, {this.rhoSubunits = 1, this.thetaSubunitsPerDegree = 10, this.luminanceThreashold = 150});
 
-  final int processedImageWidth = 480;
+  final int processedImageWidth = 160;
 
   List<ThetaRho> getPageBoundaryLines() {
     final imageShrinkedToPaperArea = copyResize(_image, width: processedImageWidth);
@@ -50,15 +50,14 @@ class HoughTransform {
 
   List<ThetaRho> getAllLines() {
     final imageShrinkedToPaperArea = copyResize(_image, width: processedImageWidth);
-    
+
     var sobleImage = sobel(imageShrinkedToPaperArea);
 
     var matrix = calculateHoughMatrix(sobleImage);
-    matrix = getMatrixWithLocalMaxima(matrix, 10);
-    matrix = getMatrixWithLocalMaxima(matrix, 50);
+    matrix = getMatrixWithLocalMaxima(matrix, 20);
     matrix = nomalizeMatrix(matrix);
 
-    var lines = _getHighestThetaRho(matrix, 20);
+    var lines = _getHighestThetaRho(matrix, 100);
     return lines;
   }
 
@@ -204,12 +203,13 @@ class HoughTransform {
     int i = 0;
     double verticalThreshold = 0.01;
     double horizontalThreshold = 0.001;
-    for (double d = -pi; d < pi; d += angleUnit) {
-      if (sin(d).abs() < verticalThreshold) {
-        retVar.putIfAbsent(i++, () => d);
-      } else if ((1 - sin(d).abs()).abs() < horizontalThreshold) {
-        retVar.putIfAbsent(i++, () => d);
-      }
+    for (double d = 0; d <= pi + pi / 2; d += angleUnit) {
+      retVar.putIfAbsent(i++, () => d);
+      // if (sin(d).abs() < verticalThreshold) {
+      //   retVar.putIfAbsent(i++, () => d);
+      // } else if ((1 - sin(d).abs()).abs() < horizontalThreshold) {
+      //   retVar.putIfAbsent(i++, () => d);
+      // }
     }
     return retVar;
   }
