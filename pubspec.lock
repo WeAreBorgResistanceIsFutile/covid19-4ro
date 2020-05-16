@@ -43,6 +43,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.5.7+4"
+  canny_edge_detection:
+    dependency: "direct main"
+    description:
+      name: canny_edge_detection
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.2"
   charcode:
     dependency: transitive
     description:

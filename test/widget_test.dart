@@ -12,7 +12,7 @@ void main() {
       DateTime t = DateTime.now();
       HoughTransform ht = HoughTransform(img);
 
-      var a = ht.getAllLines();
+      var a = ht.getAllLinesSobel();
       expect(a.length, equals(21));
       expect(a[0].rho, -477);
       expect(a[0].theta, -3.141592653589793);
@@ -82,7 +82,7 @@ void main() {
       DateTime t = DateTime.now();
       HoughTransform ht = HoughTransform(img, thetaSubunitsPerDegree: 1);
 
-      var a = ht.getAllLines();
+      var a = ht.getAllLinesSobel();
       expect(a.length, equals(23));
       expect(a[0].rho, -477);
       expect(a[0].theta, -3.141592653589793);

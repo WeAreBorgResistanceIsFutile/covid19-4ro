@@ -2,6 +2,7 @@ import 'dart:collection';
 import 'dart:core';
 import 'dart:math';
 
+import 'package:canny_edge_detection/canny_edge_detection.dart';
 import 'package:image/image.dart';
 
 class HoughTransform {
@@ -35,7 +36,6 @@ class HoughTransform {
     var ratio = _image.width / processedImageWidth;
 
     var horizontalLines = lines.where((e) => e.theta < pi / 4 && e.rho > 10 && e.rho < sobleImage.width - 10).map((e) => ThetaRho(e.theta, (e.rho * ratio).toInt())).toList();
-
     var verticalLines = lines.where((e) => e.theta > pi / 4 && e.rho > 1 && e.rho < sobleImage.height - 10).map((e) => ThetaRho(e.theta, (e.rho * ratio).toInt())).toList();
 
     horizontalLines.sort((a, b) => a.rho.compareTo(b.rho));
@@ -48,7 +48,7 @@ class HoughTransform {
     }
   }
 
-  List<ThetaRho> getAllLines() {
+  List<ThetaRho> getAllLinesSobel() {
     final imageShrinkedToPaperArea = copyResize(_image, width: processedImageWidth);
 
     var sobleImage = sobel(imageShrinkedToPaperArea);
@@ -58,7 +58,27 @@ class HoughTransform {
     matrix = nomalizeMatrix(matrix);
 
     var lines = _getHighestThetaRho(matrix, 100);
-    return lines;
+    return _getVerticalThetaRho(lines);
+  }
+
+  List<ThetaRho> getAllLinesSobelEnhanced() {
+    final imageShrinkedToPaperArea = copyResize(_image, width: processedImageWidth);
+
+    var imt = gaussianBlur(imageShrinkedToPaperArea, 2);
+
+    var matrix = calculateBWMatrix(imt);
+    matrix = getMatrixWithLocalMaxima(matrix, 5);
+
+    var img = imageFromMatrix(matrix);
+
+    var sobleImage = sobel(imt + img);
+
+    matrix = calculateHoughMatrix(sobleImage);
+    matrix = getMatrixWithLocalMaxima(matrix, 20);
+    matrix = nomalizeMatrix(matrix);
+
+    var lines = _getHighestThetaRho(matrix, 0);
+    return _getVerticalThetaRho(lines);
   }
 
   Image getHoughSpaceImage() {
@@ -92,11 +112,90 @@ class HoughTransform {
 
     for (var theta = 0; theta < matrix.length; theta++) {
       for (var rho = 0; rho < matrix[0].length; rho++) {
-        if (matrix[theta][rho] > threshold) retVar.add(new ThetaRho(_degreeIndex[theta], (rho - _houghMatrixRoAxisMax ~/ 2) ~/ rhoSubunits));
+        if (matrix[theta][rho] > threshold) retVar.add(new ThetaRho(_degreeIndex[theta], (rho - _houghMatrixRoAxisMax ~/ 2) ~/ rhoSubunits, pixelCount: matrix[theta][rho]));
       }
     }
 
     return retVar;
+  }
+
+  List<ThetaRho> _getHighestThetaRho2(List<List<int>> matrix, int threshold) {
+    var retVar = List<ThetaRho>();
+
+    for (var theta = 0; theta < matrix.length; theta++) {
+      for (var rho = 0; rho < matrix[0].length; rho++) {
+        retVar.add(new ThetaRho(_degreeIndex[theta], (rho - _houghMatrixRoAxisMax ~/ 2) ~/ rhoSubunits, pixelCount: matrix[theta][rho]));
+      }
+    }
+
+    return _getVerticalThetaRho(retVar);
+  }
+
+  List<ThetaRho> _getVerticalThetaRho(List<ThetaRho> lines) {
+    var oneDegree = pi / 180;
+    double thetaDelta = oneDegree * 2;
+    int rhoDelta = 10;
+    var parallelLines = List<ThetaRho>();
+    for (var i = 0; i < lines.length - 1; i++) {
+      var e1 = lines[i];
+      var e2 = lines[i + 1];
+      if (doubleAlmostEqual(e1.theta, e2.theta, thetaDelta) && !intAlmostEqual(e1.rho, e2.rho, rhoDelta)) {
+        parallelLines.add(e1);
+        parallelLines.add(e2);
+      }
+    }
+
+    var cos90Degree = cos(pi / 2);
+    var verticalLines = List<ThetaRho>();
+    for (var i = 0; i < parallelLines.length; i++) {
+      var e1 = parallelLines[i];
+      for (var j = i + 1; j < parallelLines.length; j++) {
+        var e2 = parallelLines[j];
+        if (doubleAlmostEqual(cos(e1.theta - e2.theta), cos90Degree, 0.1)) {
+          if (!hasMatch(verticalLines, e1, rhoDelta, thetaDelta)) {
+            verticalLines.add(e1);
+          }
+          if (!hasMatch(verticalLines, e2, rhoDelta, thetaDelta)) {
+            verticalLines.add(e2);
+          }
+        }
+      }
+    }
+    return verticalLines;
+  }
+
+  bool doubleAlmostEqual(double e1, double e2, double delta) => e1 - delta < e2 && e2 < e1 + delta;
+  bool intAlmostEqual(int e1, int e2, int delta) => e1 - delta < e2 && e2 < e1 + delta;
+  bool thetaRhoAlmostEqual(ThetaRho e1, ThetaRho e2, int rhoDelta, double thetaDelta) {
+    if (intAlmostEqual(e1.rho, e2.rho, rhoDelta) && doubleAlmostEqual(e1.theta, e2.theta, thetaDelta)) {
+      return true;
+    } else if (intAlmostEqual(e1.rho.abs(), e2.rho.abs(), rhoDelta)) {
+      if ((e1.theta - e2.theta).abs() / pi - (e1.theta - e2.theta).abs() ~/ pi < 0.1) {
+        int rho = pow(-1, (e1.theta - e2.theta).abs() ~/ pi) * e1.rho;
+        if (intAlmostEqual(rho, e2.rho, rhoDelta)) {
+          return true;
+        } else if ((sin(e1.theta) == 0 || sin(e1.theta) == sin(pi)) && (sin(e2.theta) == 0 || sin(e2.theta) == sin(pi))) {
+          return intAlmostEqual(e1.rho, e2.rho, rhoDelta);
+        }
+      }
+    }
+    return false;
+  }
+
+  bool hasMatch(List<ThetaRho> lines, ThetaRho e1, int rhoDelta, double thetaDelta) {
+    bool retVar = false;
+    lines.forEach((e) => retVar = retVar || thetaRhoAlmostEqual(e, e1, rhoDelta, thetaDelta));
+    return retVar;
+  }
+
+  Image imageFromMatrix(List<List<int>> matrix) {
+    var img = new Image(matrix.length, matrix[0].length);
+    for (int x = 0; x < img.width; x++) {
+      for (int y = 0; y < img.height; y++) {
+        img.setPixel(x, y, getColor(matrix[x][y], matrix[x][y], matrix[x][y]));
+      }
+    }
+    return img;
   }
 
   List<List<int>> nomalizeMatrix(List<List<int>> matrix) {
@@ -166,7 +265,22 @@ class HoughTransform {
 
     for (var x = 0; x < image.width; x++) {
       for (var y = 0; y < image.height; y++) {
-        retVar[x][y] = getLuminance(image.getPixel(x, y)) > luminanceThreashold;
+        int c = image.getPixel(x, y);
+        var l = (getRed(c) + getBlue(c) + getGreen(c)) ~/ 3;
+        retVar[x][y] = l > luminanceThreashold;
+      }
+    }
+    return retVar;
+  }
+
+  List<List<int>> calculateBWMatrix(Image image) {
+    var retVar = createMatrix<int>(image.width, image.height, () => 0);
+
+    for (var x = 0; x < image.width; x++) {
+      for (var y = 0; y < image.height; y++) {
+        int c = image.getPixel(x, y);
+        var l = (getRed(c) + getBlue(c) + getGreen(c)) ~/ 3;
+        retVar[x][y] = l;
       }
     }
     return retVar;
@@ -186,7 +300,35 @@ class HoughTransform {
 
     for (var x = 0; x < image.width; x++) {
       for (var y = 0; y < image.height; y++) {
-        if (getLuminance(image.getPixel(x, y)) > luminanceThreashold) {
+        int c = image.getPixel(x, y);
+        var l = (getRed(c) + getBlue(c) + getGreen(c)) ~/ 3;
+        if (l > luminanceThreashold) {
+          for (int i = 0; i < _degreeIndex.length; i++) {
+            var value = x * _cosTheta[i] + y * _sinTheta[i];
+            houghMatrix[i][(value * rhoSubunits).toInt() + _houghMatrixRoAxisMax ~/ 2]++;
+          }
+        }
+      }
+    }
+
+    return houghMatrix;
+  }
+
+  List<List<int>> calculateHoughMatrixFromMatrix(List<List<int>> matrix) {
+    double angleUnit = pi / (180 * thetaSubunitsPerDegree);
+
+    _degreeIndex = _createDegreeIndex(angleUnit);
+    _sinTheta = _createSinTheta(_degreeIndex);
+    _cosTheta = _createCosTheta(_degreeIndex);
+
+    _houghMatrixRoAxisMax = _calculateImageDiagonal(matrix.length, matrix[0].length) * rhoSubunits * 2;
+    _houghMatrixThetaAxisMax = _degreeIndex.length;
+
+    var houghMatrix = createMatrix<int>(_houghMatrixThetaAxisMax, _houghMatrixRoAxisMax, () => 0);
+
+    for (var x = 0; x < matrix.length; x++) {
+      for (var y = 0; y < matrix[0].length; y++) {
+        if (matrix[x][y] > luminanceThreashold) {
           for (int i = 0; i < _degreeIndex.length; i++) {
             var value = x * _cosTheta[i] + y * _sinTheta[i];
             houghMatrix[i][(value * rhoSubunits).toInt() + _houghMatrixRoAxisMax ~/ 2]++;
@@ -241,11 +383,57 @@ class HoughTransform {
   List<T> _generateList<T>(int length, T defaultValue()) {
     return List<T>.generate(length, (index) => defaultValue(), growable: false);
   }
+
+  List<List<int>> kernelEdgeDetection(Image img) {
+    var maxLuminance = 0;
+    var matrix = createMatrix<int>(img.width, img.height, () => -1);
+
+    for (int x = 0; x < img.width; x++) {
+      for (int y = 0; y < img.height; y++) {
+        int c = img.getPixel(x, y);
+        var l = (getRed(c) + getBlue(c) + getGreen(c)) ~/ 3;
+        maxLuminance = l > maxLuminance ? l : 0;
+        matrix[x][y] = l;
+      }
+    }
+
+    return kernelEdgeDetectionOnMatrix(matrix, maxLuminance);
+  }
+
+  List<List<int>> kernelEdgeDetectionOnMatrix(List<List<int>> matrix, int maxLuminance) {
+    var maxLuminance = 0;
+    var filter = [-1, -1, -1, -1, 8, -1, -1, -1, -1];
+
+    var width = matrix.length;
+    var height = matrix[0].length;
+
+    var edgeDetectedImage = createMatrix<int>(width, height, () => 0);
+    for (int x = 0; x < width; x++) {
+      for (int y = 0; y < height; y++) {
+        var acc = 0;
+        for (var j = 0, fi = 0; j < 3; ++j) {
+          var yv = min(max(y - 1 + j, 0), height - 1);
+          for (var i = 0; i < 3; ++i, ++fi) {
+            int xv = min(max(x - 1 + i, 0), width - 1);
+            var l = matrix[xv][yv];
+
+            l = l > maxLuminance * 0.8 ? l : 0;
+
+            acc += l * filter[fi];
+          }
+        }
+
+        if (acc >= 255) edgeDetectedImage[x][y] = 255;
+      }
+    }
+    return edgeDetectedImage;
+  }
 }
 
 class ThetaRho {
   final double theta;
   final int rho;
+  final int pixelCount;
 
-  ThetaRho(this.theta, this.rho);
+  ThetaRho(this.theta, this.rho, {this.pixelCount});
 }

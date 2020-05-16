@@ -12,7 +12,7 @@ void main() {
       DateTime t = DateTime.now();
       HoughTransform ht = HoughTransform(img);
 
-      var a = ht.getAllLines();
+      var a = ht.getAllLinesSobel();
 
       print("HoughTransform.getAllLines:  ${DateTime.now().difference(t).inMicroseconds}");
 
@@ -86,7 +86,7 @@ void main() {
       DateTime t = DateTime.now();
       HoughTransform ht = HoughTransform(img, thetaSubunitsPerDegree: 1);
 
-      var a = ht.getAllLines();
+      var a = ht.getAllLinesSobel();
 
       print("HoughTransform.getAllLines  less theta subunits:  ${DateTime.now().difference(t).inMicroseconds}");
 
